@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Change Groups {% endblock %}
+{% block links %}
+{#    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">#}
+{#    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css">#}
+{% endblock %}
+{% load static %}
+
+{% block content %}
+{% if user_own.is_superuser  %}
+    <div class="panlel panel-default form-horizontal">
+      <div class="panel-body">
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="id_groupname">Group Name:</label>
+            <div class="col-sm-4">
+              <input name="groupname" id="id_groupname" autofocus="" type="text" value="{{ group.name }}" required class="form-control">
+            </div>
+          </div>
+      </div>
+      <div class="panel-body">
+          <div class="page-header">
+              <h3>Permissions</h3>
+          </div>
+          <div class="table-responsives">
+                <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                    <div class="row">
+                        <div class="col-sm-12">
+
+                            <table id="example" class="table table-striped table-bordered dataTable"
+                                   style="width: 100%;" role="grid" aria-describedby="example_info">
+                                <thead>
+                                <tr role="row">
+                                    <th style="width: 5px;" ><input type="checkbox" name="select_all" value="1"
+                                                                    id="example-select-all"></th>
+                                    <th class="sorting_asc" tabindex="0" aria-controls="example"
+                                        rowspan="1" colspan="1" style="width: 8000px;"
+                                        aria-sort="ascending"
+                                        aria-label="Name: activate to sort column descending">
+                                        Permission
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for permission in permissions %}
+                                    <tr role="row" class="odd">
+                                        {% if group_permissions %}
+                                            {% if permission.id in group_permissions %}
+                                                <td class="sorting_0"><input type="checkbox"
+                                                                             name="selectedBox"
+                                                                             class="selectedBox"
+                                                                             checked
+                                                                             value="{{ permission.id }}"></td>
+                                            {% else %}
+                                                <td class="sorting_0"><input type="checkbox"
+                                                                             name="selectedBox"
+                                                                             class="selectedBox"
+                                                                             value="{{ permission.id }}"></td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td class="sorting_0"><input type="checkbox"
+                                                                         name="selectedBox"
+                                                                         class="selectedBox"
+                                                                         value="{{ permission.id }}">
+                                            </td>
+                                        {% endif %}
+                                        <td class="sorting_1">{{ permission.name }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+
+
+                                <tfoot>
+                                <tr>
+                                    <th></th>
+                                    <th rowspan="1" colspan="1">Permissions</th>
+                                </tr>
+                                </tfoot>
+
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          <hr/>
+          <input class="btn btn-primary pull-right group-save" type="submit" value="Save">
+      </div>
+    </div>
+
+{% endif %}
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}admin/js/user_group.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+
+    <script type="text/javascript">
+        $('.group-save').on('click', function () {
+            var data={
+                'post_url': "{% url 'change_group' group.id  %}",
+                'success_url': "{% url 'groups_index' %}",
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+            save_group(data);
+        });
+    </script>
+
+{% endblock %}

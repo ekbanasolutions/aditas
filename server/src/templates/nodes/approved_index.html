@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="panel-sec">
+    {% if not not_a_single_client %}
+        <br>
+        {% if nodes %}
+
+                        <table id="approved_nodes_table"
+                               class="table dataTable table-striped table-bordered  tbl-bdr-x-0 mb-0">
+                            <thead>
+                            <tr>
+                                <th><p>IP</p></th>
+                                <th><p>NAME</p></th>
+                                <th><p>HOSTNAME</p></th>
+                                <th><p>FQDN</p></th>
+                                <th><p>Approved</p></th>
+                                <th>Action</th>
+                            </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                            {% for node in nodes %}
+                                <tr id="myUL">
+                                    <td class="hidden"><p class="node_address">{{ node.id }}</p></td>
+                                    <td>
+                                        <div class="ip-block"><h4>{{ node.ip }}</h4>
+                                            {% if not node.offline %}
+                                                {% if node.memory and node.disk %}
+                                                    <p>Mem:{{ node.memory }}
+                                                        <small> GB</small>
+                                                        / Disk:{{ node.disk }}
+                                                        <small> GB</small>
+                                                    </p>
+                                                {% endif %}
+                                            {% else %}
+
+                                                <p><b>client is offline</b></p>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>{{ node.name }}</td>
+                                    <td>{{ node.hostname }}</td>
+                                    <td>{{ node.fqdn }}</td>
+
+                                    <td>
+                                        <div class="dropdown metric-dropdown">
+                                            {% if user_own.is_superuser or 2 in permission_user or 4 in permission_user %}
+                                                <button class="btn btn-default dropdown-toggle btn-plain" type="button"
+                                                        id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
+                                                        aria-expanded="true">
+                                                    ...
+                                                </button>
+                                            {% endif %}
+                                            <ul class="dropdown-menu dropdown-menu-right"
+                                                aria-labelledby="dropdownMenu1">
+                                                {% if user_own.is_superuser or 4 in permission_user %}
+                                                    <li><a href="{% url 'browse_nodes' node.id %}">Browse</a></li>
+                                                {% endif %}
+                                                {% if user_own.is_superuser %}
+                                                    <li><a href="#" data-toggle-to="0" data-toggle="tooltip"
+                                                           title="disapprove"
+                                                           class="nodes_approval_status">Disapprove</a></li>
+                                                    <li><a href="{% url 'edit_node' node.id %}">Edit</a></li>
+                                                {% endif %}
+                                                {% if user_own.is_superuser or 2 in permission_user %}
+                                                    <li><a href="{% url 'node_details_one' node.id %}">View Metrics</a>
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+        {% else %}
+
+        {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('.nodes_approval_status').on("click", function () {
+                var toggle_to = parseInt($(this).data('toggle-to'));
+                var id_this = $(this);
+                var id = id_this.closest('tr').find('p.node_address').text();
+                HoldOn.open();
+                $.ajax({
+                    type: "POST",
+                    dataType: 'json',
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}', 'status': toggle_to, 'id': id},
+                    url: '{% url 'toggle_approval'%}',
+                    success: function (data) {
+                        if (data.result === 1) {
+                            id_this.closest('tr').remove();
+                            var rowCount = $('#approved_nodes_table tr').length;
+                            if (rowCount <= 0) {
+                                window.location.reload(true)
+                            }
+                        }
+                        HoldOn.close();
+                    }
+                });
+            });
+
+
+            $('#approved_nodes_table').dataTable({
+                "dom":'<"panel panel-default custom-search-head"<"panel-body"f>><"panel panel-default custom-table-body"' +
+                    '<"panel-body"t<"custom-pagin"p>>>',
+                language:{
+                    search: "_INPUT_",
+                    searchPlaceholder: "Server Name..."
+                },
+                "fnDrawCallback": function (oSettings) {
+                    $(oSettings.nTHead).hide();
+                }
+            });
+        });
+
+    </script>
+{% endblock %}

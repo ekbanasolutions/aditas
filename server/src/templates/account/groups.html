@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Manage Groups {% endblock %}
+{% load static %}
+
+{% block content %}
+    {% if user_own.is_superuser  %}
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="page-header d-flex justify-content-between">
+          <div class="actions form-inline">
+                <div class="form-group">
+                    <label>Action:</label>
+                    <select name="action" id="action" class="form-control">
+                        <option value="default" selected="">---------</option>
+                        <option value="delete_selected">Delete Selected Groups</option>
+                    </select>
+                  </div>
+                   {#            <input name="select_across" value="0" class="select-across" type="hidden">#}
+
+                  <button type="submit" class="btn btn-primary" title="Run the selected action" id="delete_go">Go</button>
+            </div>
+            {#                                    <span class="action-counter" data-actions-icnt="2" style="display: inline;">0 of 2 selected</span>#}
+            {#<a class="btn btn-default" type="button" style="background-color: #292961; color: white" id="back-button" href="{% url 'add_group' %}">Add Group</a>#}
+        </div>
+
+        <div class="table-responsives">
+              <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                  <div class="row">
+                      <div class="col-sm-12">
+
+                          <table id="example" class="table table-striped table-bordered dataTable"
+                                 style="width: 100%;" role="grid" aria-describedby="example_info">
+                              <thead>
+                              <tr role="row">
+                                  <th style="width: 5px"><input type="checkbox" name="select_all" value="1"
+                                             id="example-select-all"></th>
+                                  <th style="width: 8000px" class="sorting_asc" tabindex="0" aria-controls="example"
+                                      rowspan="1" colspan="1" style="width: 209px;"
+                                      aria-sort="ascending"
+                                      aria-label="Name: activate to sort column descending">
+                                      Groupname
+                                  </th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              {% for group_data in groups_data %}
+                                  <tr role="row" class="odd">
+                                      <td class="sorting_0"><input type="checkbox"
+                                                                   name="selectedBox"
+                                                                   class="selectedBox"
+                                                                   value="{{ group_data.id }}">
+                                      </td>
+                                      <td class="sorting_1"><a href="{% url 'change_group' group_data.id %}">{{ group_data.name }}</a></td>
+
+
+                                  </tr>
+                              {% endfor %}
+                              </tbody>
+
+
+                              <tfoot>
+                              <tr>
+                                  <th></th>
+                                  <th rowspan="1" colspan="1">Groupname</th>
+
+                              </tr>
+                              </tfoot>
+
+                          </table>
+
+
+                      </div>
+
+                  </div>
+
+              </div>
+          </div>
+      </div>
+    </div>
+
+
+
+{% endif %}
+{% endblock %}
+{% block javascript %}
+
+<script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+<link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+    <script>
+
+        var table = $("#example").DataTable({
+            'columnDefs': [{
+                'targets': 0,
+                'searchable': false,
+                'orderable': false,
+                'className': 'dt-body-center'
+            }],
+            'order': [[1, 'asc']]
+        });
+        // Handle click on "Select all" control
+            $('#example-select-all').on('click', function(){
+                // Get all rows with search applied
+                var rows = table.rows({ 'search': 'applied' }).nodes();
+                console.log(rows);
+                // Check/uncheck checkboxes for all rows in the table
+                $('input[type="checkbox"]', rows).prop('checked', this.checked);
+            });
+
+        $('#example tbody').on('change', 'input[type="checkbox"]', function(){
+                // If checkbox is not checked
+                if(!this.checked){
+                    var el = $('#example-select-all').get(0);
+                    // If "Select all" control is checked and has 'indeterminate' property
+                    if(el && el.checked && ('indeterminate' in el)){
+                        // Set visual state of "Select all" control
+                        // as 'indeterminate'
+                        el.indeterminate = true;
+                    }
+                }
+            });
+
+        $('#delete_go').on('click', function () {
+            var option = $('#action option:selected').val();
+
+                   if (option === "delete_selected") {
+                       let selectedArr = [];
+                       table.rows().nodes().to$().find('input:checkbox[name=selectedBox]:checked').each(function () {
+                           selectedArr.push($(this).val());
+                       });
+
+                       $.ajax({
+                           type: "POST",
+                           dataType: 'json',
+                           data: {
+                               'csrfmiddlewaretoken': '{{ csrf_token }}',
+                               'groups_id': JSON.stringify(selectedArr),
+                           },
+                           url: "{% url 'groups_delete' %}",
+                           success: function (data) {
+                               if (data.success){
+                                   location.reload();
+                               }
+                           }
+
+                       });
+                   }
+
+        });
+    </script>
+{% endblock %}

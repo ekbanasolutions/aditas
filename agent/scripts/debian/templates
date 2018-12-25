@@ -1,0 +1,29 @@
+Template: aditas-agent/sudo_pass
+Type: password
+Description: Please enter your sudo password
+ We need superuser privilege for some operations
+
+Template: aditas-agent/db_host
+Type: string
+Description: Please enter your postgres host ip
+ This host must be the same used by server
+
+Template: aditas-agent/db_port
+Type: string
+Description: Please enter your postgres port
+ This host must be the same used by server
+
+Template: aditas-agent/c_user
+Type: string
+Description: Please enter your postgres superuser
+ This user will be used to login to postgres
+
+Template: aditas-agent/c_pass
+Type: password
+Description: Please enter your postgres superuser password
+
+Template: aditas-agent/db_name
+Type: string
+Description: Please enter the database name
+ This database must be same as used by server
+

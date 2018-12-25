@@ -1,0 +1,5 @@
+../src/* /usr/share/aditas/server
+shell/*.sh /etc/aditas/server/scripts/shell
+shell/*.sql /etc/aditas/server/scripts/sql
+../default/variables/* /var/lib/aditas/server/default/config/vars
+

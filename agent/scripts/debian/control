@@ -1,0 +1,15 @@
+Source: aditas-agent
+Section: admin
+Priority: normal
+Maintainer: Saurab Dahal <saurav@ekbana.net>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: <insert the upstream URL, if relevant>
+#Vcs-Git: git://anonscm.debian.org/collab-maint/argus-agent.git
+#Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/argus-agent.git
+
+Package: aditas-agent
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, postgresql-client, python3-dev, python-dev
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>

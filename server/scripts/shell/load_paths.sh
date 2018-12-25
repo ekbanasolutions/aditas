@@ -1,0 +1,10 @@
+export ADITAS_HOME="/usr/share/aditas/server"
+export ADITAS_SCRIPT_DIR="/etc/aditas/server/scripts/shell"
+export ADITAS_LIB_DIR="/var/lib/aditas/server"
+export ADITAS_LOG_DIR="/var/log/aditas/server/"
+
+export ADITAS_INSTALLER_SCRIPT="${ADITAS_SCRIPT_DIR}/installer.sh"
+export ADITAS_DBCONF_VALUES="${ADITAS_SCRIPT_DIR}/get_set_variables.sh"
+export SQL_SCRIPT="${ADITAS_SCRIPT_DIR}/db.sh"
+export VHOST_FILE="${ADITAS_SCRIPT_DIR}/vhost.sh"
+export ADITAS_VENV_PATH="/etc/aditas/aditasenv"

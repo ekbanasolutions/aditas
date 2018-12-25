@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Edit Node{% endblock %}
+{% load static %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="page-header"><h3>Edit Node</h3></div>
+            <form action="{% url 'edit_node' edit_node.id %}" method="post" class="form-horizontal" style="max-width: 500px;">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Node Ip:</label>
+                <div class="col-sm-9">
+                  <input type="text" name="node_ip" value="{{ edit_node.ip }}" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Hostname:</label>
+                <div class="col-sm-9">
+                  <input type="text" name="hostname" value="{{ edit_node.hostname }}" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Name:</label>
+                <div class="col-sm-9">
+                  <input type="text" name="name" value="{{ edit_node.name }}" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label">FQDN:</label>
+                <div class="col-sm-9">
+                  <input type="text" name="fqdn" value="{{ edit_node.fqdn }}" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                  <input type="submit" value="Submit" class="btn btn-primary">
+                </div>
+            </div>
+
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+
+
+
+

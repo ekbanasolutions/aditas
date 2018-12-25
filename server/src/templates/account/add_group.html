@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Add Groups {% endblock %}
+{% block links %}
+<!--     <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css"> -->
+{% endblock %}
+{% load static %}
+
+{% block content %}
+{% if user_own.is_superuser  %}
+
+<div class="panlel panel-default">
+    <div class="panel-body">
+        <div class="page-header" style="dissplay: none;">
+            <h3>Add Group</h3>
+        </div>
+        <form enctype="multipart/form-data" action="{% url 'add_group' %}" method="post" class="form-horizontal" style="max-width: 700px;">
+            {% csrf_token %}
+            {% if error_msg %}
+                <p class="alert alert-danger" role="alert">{{ error_msg }}</p>
+            {% elif success_msg %}
+                <p class="alert alert-danger" role="alert">{{ success_msg }}</p>
+            {% endif %}
+
+            <div class="form-group">
+                <label class="col-sm-4 control-label" for="id_groupname">Group Name:</label>
+                <div class="col-sm-7">
+                  <input name="groupname" class="form-control" id="id_groupname" autofocus="" type="text" value="{{ group_name }}" required class="form-control">
+                  <div class="help">Groupname must be all character and length should be greater
+                    than or equal to 5
+                  </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-8">
+                  <div class="btn-groups">
+                    {#  <input value="Save" class="default" name="save" type="submit">#}
+                    <input value="Save and add another" name="addanother" class="btn btn-primary" type="submit">
+                    <input value="Save and continue editing" name="continue" class="btn btn-primary" type="submit">
+                  </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endif %}
+{% endblock %}

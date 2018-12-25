@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <style>
+        #example_wrapper a{
+            cursor: pointer;
+        }
+        #exampleModal a{
+            cursor: pointer;
+        }
+
+        #example_wrapper a.directory_class{
+            color: #007bff;
+        }
+        #exampleModal table a.directory_class{
+            color: #007bff;
+        }
+    </style>
+    {% if client %}
+        <div class="page-header">
+            <h3>HDFS</h3>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="clearfix">
+                    <button class="btn btn-primary pull-right mb-15" type="button" id="back-button">back</button>
+                </div>
+                <div class="input-group mb-15">
+                    <input type="text" class="form-control" id="directory" readonly>
+
+                    {#                                <span class="input-group-btn">#}
+                    {#                    <button class="btn btn-default" type="button" id="btn-nav-directory">Go!</button>#}
+                    {#                            </span>#}
+                    <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" id="upload-to-local">To local</button>
+                                    </span>
+                </div>
+
+                <div class="table-responsives">
+                    <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap"><div class="row"><div class="col-sm-12">
+
+                        <table id="example" class="table table-striped table-bordered dataTable" style="width: 100%;" role="grid" aria-describedby="example_info">
+                            <thead>
+                            <tr role="row"><th><input type="checkbox" name="select_all" value="1" id="example-select-all"></th>
+                                <th class="sorting_asc" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 209px;" aria-sort="ascending" aria-label="Name: activate to sort column descending">Permission</th><th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Owner</th>
+                                <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Group</th>
+                                <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Size</th>
+                                <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in rows %}
+                                <tr role="row" class="odd">
+                                    <td class="sorting_0"><input type="checkbox" name="selectedBox" class="selectedBox" value="{{ row.pathSuffix }}"></td>
+                                    <td class="sorting_1">{{ row.permission }}</td>
+                                    <td class="sorting_2">{{ row.owner }}</td>
+                                    <td class="sorting_3">{{ row.group }}</td>
+                                    <td class="sorting_4">{{ row.length }}</td>
+                                    {% if row.type == 'FILE' %}
+                                        <td class="sorting_5">{{ row.pathSuffix }}</td>
+                                    {% else %}
+                                        <td class="sorting_6"><a id="dir_a" style="display: block" class="directory_class">{{ row.pathSuffix }}</a></td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+
+
+                            <tfoot>
+                            <tr><th></th><th rowspan="1" colspan="1">Permission</th><th rowspan="1" colspan="1">Owner</th><th rowspan="1" colspan="1">Group</th><th rowspan="1" colspan="1">Size</th><th rowspan="1" colspan="1">Name</th></tr>
+                            </tfoot>
+
+                        </table>
+
+
+                    </div>
+
+                    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">{{ master_ip }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <button class="btn btn-default" type="button" id="modal-back-button">back</button>
+                        <button class="btn btn-default" type="button" id="mkdir-button-modal">make directory</button>
+                        <select id="select_node">
+                            <option value="" disabled selected hidden>Select Nodes</option>
+                            {% for node in nodes_all %}
+                                <option value="{{ node.ip }}">{{ node.ip }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="text" class="form-control" id="modal-directory" readonly>
+                        <div class="table-responsive">
+                            <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap"><div class="row"><div class="col-sm-12">
+
+                                <table id="modal-example" class="table table-striped table-bordered dataTable" style="width: 100%;" role="grid" aria-describedby="example_info">
+                                    <thead>
+                                    <tr role="row">
+                                        <th class="sorting_asc" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 209px;" aria-sort="ascending" aria-label="Name: activate to sort column descending">Permission</th><th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Owner</th>
+                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Group</th>
+                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Size</th>
+                                        <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Name</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for row_local in rows_local %}
+                                        <tr role="row" class="odd">
+                                            <td class="sorting_1">{{ row_local.0 }}</td>
+                                            <td class="sorting_2">{{ row_local.1 }}</td>
+                                            <td class="sorting_3">{{ row_local.2 }}</td>
+                                            <td class="sorting_4">{{ row_local.3 }}</td>
+                                            {% if row_local.5 == 'file' %}
+                                                <td class="sorting_5">{{ row_local.4 }}</td>
+                                            {% else %}
+                                                <td class="sorting_6"><a style="display: block" class="directory_class">{{ row_local.4 }}</a></td>
+                                            {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+
+
+                                    <tfoot>
+                                    <tr><th rowspan="1" colspan="1">Permission</th><th rowspan="1" colspan="1">Owner</th><th rowspan="1" colspan="1">Group</th><th rowspan="1" colspan="1">Size</th><th rowspan="1" colspan="1">Name</th></tr>
+                                    </tfoot>
+
+                                </table>
+
+
+                            </div>
+
+                            </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="modal-hdfs-select-directory">Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" tabindex="-1" id="mkdirModal" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Name of folder</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="mkdir-modal-directory" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="mkdir-create">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+    <script type="text/javascript" src="{{ STATIC_URL }}browse/js/browse_hdfs.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}browse/js/browse.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#modal-example").DataTable();
+
+
+            var table = $("#example").DataTable({
+                'columnDefs': [{
+                    'targets': 0,
+                    'searchable': false,
+                    'orderable': false,
+                    'className': 'dt-body-center'
+                }],
+                'order': [[1, 'asc']]
+            });
+            // Handle click on "Select all" control
+            $('#example-select-all').on('click', function(){
+                // Get all rows with search applied
+                var rows = table.rows({ 'search': 'applied' }).nodes();
+                // Check/uncheck checkboxes for all rows in the table
+                $('input[type="checkbox"]', rows).prop('checked', this.checked);
+            });
+            // Handle click on checkbox to set state of "Select all" control
+            $('#example tbody').on('change', 'input[type="checkbox"]', function(){
+                // If checkbox is not checked
+                if(!this.checked){
+                    var el = $('#example-select-all').get(0);
+                    // If "Select all" control is checked and has 'indeterminate' property
+                    if(el && el.checked && ('indeterminate' in el)){
+                        // Set visual state of "Select all" control
+                        // as 'indeterminate'
+                        el.indeterminate = true;
+                    }
+                }
+            });
+
+            $("#upload-to-local").click(function () {
+            let selectedArr = [];
+                $('#example_wrapper table tbody').find('input:checkbox[name=selectedBox]:checked').each(function() {
+                    selectedArr.push($(this).val());
+                });
+
+                if (selectedArr.length >= 1){
+                    console.log(selectedArr);
+                    $('#exampleModal').modal('show');
+                    var data_click = {
+                        'table_id': $("#modal-example"),
+                        'directory_id': $("#modal-directory"),
+                        'clicked_directory': "",
+                        'node_ip': $("#exampleModalLabel").html(),
+                        'browse_url': '{% url 'browse_eachnode_directory_ajax' %}',
+                        'csrf': '{{ csrf_token }}'
+                    }
+                browse_eachnode_local(data_click);
+                }
+                else {
+                    alert("please select at least one file or folder");
+                }
+
+            });
+
+            $("#modal-hdfs-select-directory").click(function () {
+
+                let selectedArr = [];
+                table.rows().nodes().to$().find('input:checkbox[name=selectedBox]:checked').each(function() {
+                    selectedArr.push($(this).val());
+                });
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data : {
+                        'file_name': JSON.stringify(selectedArr),
+                        'root_folder': $("#directory").val(),
+                        'destination_folder': $("#modal-directory").val(),
+                        'node_ip': $("#exampleModalLabel").html(),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    url : "{% url 'files_to_local_ajax' %}",
+                    success : function (data) {
+                        if (data.success === 1) {
+                            alert("successfully send to local");
+                            var data_refresh = {
+                                'table_id': $("#modal-example"),
+                                'directory_id': $("#modal-directory"),
+                                'clicked_directory': "",
+                                'node_ip': $("#exampleModalLabel").html(),
+                                'browse_url': '{% url 'browse_eachnode_directory_ajax' %}',
+                                'csrf': '{{ csrf_token }}'
+                            }
+                            browse_eachnode_local(data_refresh);
+                        }
+                        else if (data.success === 0) {
+                            alert(JSON.stringify(data.msg[0]));
+
+                            var data_refresh = {
+                                'table_id': $("#modal-example"),
+                                'directory_id': $("#modal-directory"),
+                                'clicked_directory': "",
+                                'node_ip': $("#exampleModalLabel").html(),
+                                'browse_url': '{% url 'browse_eachnode_directory_ajax' %}',
+                                'csrf': '{{ csrf_token }}'
+                            }
+                            browse_eachnode_local(data_refresh);
+                        }
+
+                    }
+                });
+            });
+
+
+            $("#example").on("click", "a.directory_class", function () {
+
+                var data_click = {
+                    'table_id': $("#example"),
+                    'directory_id': $("#directory"),
+                    'clicked_directory': $(this).html(),
+                    'master_ip': '{{ master_ip }}',
+                    'browse_url': "{% url 'browse_hdfs_directory' %}",
+                    'checkbox': true,
+                    'csrf': '{{ csrf_token }}'
+                }
+                browse_directory_hdfs(data_click);
+            });
+
+
+            $("#back-button").click(function () {
+                var data_back = {
+                    'table_id': $("#example"),
+                    'directory_id': $('#directory'),
+                    'master_ip': '{{ master_ip }}',
+                    'back_url': '{% url 'back_with_hdfs_ajax' %}',
+                    'csrf': '{{ csrf_token }}',
+                }
+                back_directory_hdfs(data_back);
+
+            });
+
+
+            $("#modal-example").on("click", "a.directory_class", function() {
+                var data_click = {
+                    'table_id': $("#modal-example"),
+                    'directory_id': $("#modal-directory"),
+                    'clicked_directory': $(this).html(),
+                    'node_ip': $("#exampleModalLabel").html(),
+                    'browse_url': '{% url 'browse_eachnode_directory_ajax' %}',
+                    'csrf': '{{ csrf_token }}'
+                }
+                browse_eachnode_local(data_click);
+            });
+
+            $("#modal-back-button").click(function () {
+                var data_back = {
+                    'table_id': $("#modal-example"),
+                    'directory_id': $("#modal-directory"),
+                    'node_ip': $("#exampleModalLabel").html(),
+                    'back_url': '{% url 'back_eachnode_with_ajax' %}',
+                    'csrf': '{{ csrf_token }}'
+                }
+                back_eachnode(data_back);
+            });
+
+            $("#select_node").on('change', function () {
+                $("#exampleModalLabel").html($(this).val());
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data : {
+                        'node_ip': $(this).val(),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    url : "{% url 'get_node_data' %}",
+                    success : function (data) {
+                        var row_external = data.row_external;
+                        var content = '';
+                        $("#modal-example").DataTable().destroy();
+                        for(var i=0; i<row_external.length; i++){
+                            content += '<tr role="row" class="odd">';
+                            content += '<td class="sorting_1">' + row_external[i].permission + '</td>';
+                            content += '<td class="sorting_2">' + row_external[i].owner + '</td>';
+                            content += '<td class="sorting_3">' + row_external[i].group + '</td>';
+                            content += '<td class="sorting_4">' + row_external[i].size + '</td>';
+                            if(row_external[i].type === 'file'){
+                                content += '<td class="sorting_5">' + row_external[i].name + '</td>';
+                            }
+                            else {
+                                content += '<td class="sorting_6"><a style="display: block" class="directory_class">' + row_external[i].name + '</a></td>';
+                            }
+                            content += '</tr>';
+                        }
+                        $("#modal-example tbody").html(content);
+                        $('#modal-example').DataTable();
+                    }
+                });
+            });
+
+            $("#mkdir-button-modal").click(function () {
+                $('#mkdirModal').modal('show');
+
+                $("#mkdir-create").click(function () {
+                    if($("#mkdir-modal-directory").val()==""){
+                        alert("please fill the input box to create folder")
+                    }
+                    else {
+                        console.log($("#mkdir-modal-directory").val());
+                        $.ajax({
+                            type : "GET",
+                            dataType : 'json',
+                            data : {
+                                'root_folder': $("#modal-directory").val(),
+                                'folder_name': $("#mkdir-modal-directory").val(),
+                                'node_ip': $("#exampleModalLabel").html(),
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            },
+                            url : "{% url 'create_dir_local_ajax' %}",
+                            success : function(result) {
+                                if(result.success){
+                                    $("#mkdirModal").modal('hide');
+
+                                    var data_refresh = {
+                                        'table_id': $("#modal-example"),
+                                        'directory_id': $("#modal-directory"),
+                                        'clicked_directory': "",
+                                        'node_ip': $("#exampleModalLabel").html(),
+                                        'browse_url': '{% url 'browse_eachnode_directory_ajax' %}',
+                                        'csrf': '{{ csrf_token }}'
+                                    }
+                                    browse_eachnode_local(data_refresh);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+
+        });
+
+
+    </script>
+{% endblock %}

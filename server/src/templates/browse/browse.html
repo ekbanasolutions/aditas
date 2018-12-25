@@ -1,0 +1,1065 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {#{% if client %}#}
+    <style>
+        #example, #exampleModal, #copy_move_Modal a{
+            cursor: pointer;
+        }
+
+
+        #example a.directory_class{
+            color: #007bff;
+        }
+        #exampleModal a.directory_class{
+            color: #007bff;
+        }
+        #copy_move_Modal a.directory_class{
+            color: #007bff;
+        }
+
+
+    </style>
+    <div class="page-header">{{ node_name }}({{ node_ip }})</div>
+
+    <div class="btn-group mb-10">
+        <a class="btn btn-default" type="button" href="{% url 'browse_nodes' id %}?browse={{ back_path }}">back</a>
+
+        {% if 4 in permission_user or user_own.is_superuser %}
+            <button class="btn btn-default" type="button" id="make-directory-button">mkdir</button>
+            <button class="btn btn-default" type="button" id="move-button">move to</button>
+            <button class="btn btn-default" type="button" id="copy-to-button">copy to</button>
+            <button class="btn btn-default" type="button" id="rename">rename</button>
+            <button class="btn btn-default" type="button" id="delete-button" >delete</button>
+        {% endif %}
+    </div>
+
+    <div class="btn-group mb-20">
+        <div class="input-group">
+            <input type="text" class="form-control" id="directory" value="{{ path }}" readonly>
+
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="archive">Archive</button>
+                            </span>
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="extract">Extract</button>
+                            </span>
+            <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="upload-to-hdfs">To hdfs</button>
+                            </span>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="table-responsive">
+                <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap"><div class="row"><div class="col-sm-12">
+
+                    <table id="example" class="table table-striped table-bordered dataTable" style="width: 100%;" role="grid" aria-describedby="example_info">
+                        <thead>
+                        <tr role="row"><th><input type="checkbox" name="select_all" value="1" id="example-select-all"></th>
+                            <th class="sorting_asc" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 209px;" aria-sort="ascending" aria-label="Name: activate to sort column descending">Permission</th><th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Owner</th>
+                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Group</th>
+                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Size</th>
+                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Name</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in rows %}
+                            <tr role="row" class="odd">
+                                <td class="sorting_0"><input type="checkbox" name="selectedBox" class="selectedBox" value="{{ row.4 }}"></td>
+                                <td class="sorting_1">{{ row.0 }}</td>
+                                <td class="sorting_2">{{ row.1 }}</td>
+                                <td class="sorting_3">{{ row.2 }}</td>
+                                <td class="sorting_4">{{ row.3 }}</td>
+                                {% if row.5 == 'file' %}
+                                    <td class="sorting_5 "><a class="file_class">{{ row.4 }}</a></td>
+                                {% else %}
+                                    <td class="sorting_6"><a id="dir_a" style="display: block" class="directory_class" href="{% url 'browse_nodes' id %}?browse={{ path }}{{ row.4 }}">{{ row.4 }}</a></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+
+                        <tfoot>
+                        <tr><th></th><th rowspan="1" colspan="1">Permission</th><th rowspan="1" colspan="1">Owner</th><th rowspan="1" colspan="1">Group</th><th rowspan="1" colspan="1">Size</th><th rowspan="1" colspan="1">Name</th></tr>
+                        </tfoot>
+
+                    </table>
+
+
+                </div>
+
+                </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    {#                        </div>#}
+    {#                    </div>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+    <!--move copy modal-->
+    <div class="modal fade" id="copy_move_Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <!--<h5 class="modal-title" id="exampleModalLabel">10.10.5.30</h5>-->
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-10">
+                        <button class="btn btn-default" type="button" id="copy_move_back_button">back</button>
+                    </div>
+
+                    <div class="mb-10">
+                        <input type="text" class="form-control" id="copy-move-modal-directory" value="{{ path }}" readonly>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap"><div class="row"><div class="col-sm-12">
+
+                                    <table id="copy_move_modal_table" class="table table-striped table-bordered dataTable" style="width: 100%;" role="grid" aria-describedby="example_info">
+                                        <thead>
+                                        <tr role="row">
+                                            <th class="sorting_asc" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 209px;" aria-sort="ascending" aria-label="Name: activate to sort column descending">Permission</th><th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Owner</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Group</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Size</th>
+                                            <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Name</th>
+                                        </tr>
+                                        </thead>
+                                        {% for row in rows %}
+                                            {% if row.5 == 'directory' %}
+                                                <tr role="row" class="odd">
+                                                    <td class="sorting_1">{{ row.0 }}</td>
+                                                    <td class="sorting_2">{{ row.1 }}</td>
+                                                    <td class="sorting_3">{{ row.2 }}</td>
+                                                    <td class="sorting_4">{{ row.3 }}</td>
+                                                    {% if row.5 == 'file' %}
+                                                        <td class="sorting_5"><a class="file_class">{{ row.4 }}</a></td>
+                                                    {% else %}
+                                                        <td class="sorting_6"><a id="dir_a" style="display: block" class="directory_class">{{ row.4 }}</a></td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                        </tbody>
+
+
+                                        <tfoot>
+                                        <tr><th rowspan="1" colspan="1">Permission</th><th rowspan="1" colspan="1">Owner</th><th rowspan="1" colspan="1">Group</th><th rowspan="1" colspan="1">Size</th><th rowspan="1" colspan="1">Name</th></tr>
+                                        </tfoot>
+
+                                    </table>
+
+
+                                </div>
+                                </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="copy_move_modal_select">Select</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--to hdfs modal-->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">HDFS</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <button class="btn btn-default" type="button" id="back-button-modal">back</button>
+                    <button class="btn btn-default" type="button" id="mkdir-button-modal">make directory</button>
+                    <input type="text" class="form-control" id="modal-directory" readonly>
+                    <div class="table-responsive">
+                        <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap"><div class="row"><div class="col-sm-12">
+
+                            <table id="modal-example" class="table table-striped table-bordered dataTable" style="width: 100%;" role="grid" aria-describedby="example_info">
+                                <thead>
+                                <tr role="row">
+                                    <th class="sorting_asc" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 209px;" aria-sort="ascending" aria-label="Name: activate to sort column descending">Permission</th><th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Owner</th>
+                                    <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Group</th>
+                                    <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Size</th>
+                                    <th class="sorting" tabindex="0" aria-controls="example" rowspan="1" colspan="1" style="width: 320px;" aria-label="Position: activate to sort column ascending">Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row_hdfs in rows_hdfs %}
+                                    <tr role="row" class="odd">
+                                        <td class="sorting_1">{{ row_hdfs.permission }}</td>
+                                        <td class="sorting_2">{{ row_hdfs.owner }}</td>
+                                        <td class="sorting_3">{{ row_hdfs.group }}</td>
+                                        <td class="sorting_4">{{ row_hdfs.length }}</td>
+                                        {% if row_hdfs.type == 'FILE' %}
+                                            <td class="sorting_5">{{ row_hdfs.pathSuffix }}</td>
+                                        {% else %}
+                                            <td class="sorting_6"><a style="display: block" class="directory_class">{{ row_hdfs.pathSuffix }}</a></td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+
+
+                                <tfoot>
+                                <tr><th rowspan="1" colspan="1">Permission</th><th rowspan="1" colspan="1">Owner</th><th rowspan="1" colspan="1">Group</th><th rowspan="1" colspan="1">Size</th><th rowspan="1" colspan="1">Name</th></tr>
+                                </tfoot>
+
+                            </table>
+
+
+                        </div>
+
+                        </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="modal-select-directory">select</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--make directory modal-->
+    <div class="modal" tabindex="-1" id="mkdirModal" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Name of folder</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="mkdir-modal-directory" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="mkdir-create">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="archiveModal" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Name of folder</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="archive-modal-directory" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="archive-folder">ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="renameModal" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Name</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="rename-modal-directory" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="rename_file">ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#    file read head or tail#}
+    <div class="modal fade" id="head_tailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="head_tailModalLabel"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <button class="btn btn-default" type="button" id="head_button">head</button>
+                    <button class="btn btn-default" type="button" id="tail_button">tail</button>
+                    <div class="panel panel-info" id="file-info" style="">
+                        <div class="panel-heading">File contents</div>
+                        <div class="panel-body">
+                            <div class="input-group-sm">
+                                <textarea class="form-control head_tail_text" style="height: 150px" id="file-info-textarea"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="head_tail_modal_close" data-dismiss="modal">Close</button>
+                    {#                    <button type="button" class="btn btn-primary" id="modal-select-directory">select</button>#}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {#{% endif %}#}
+
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+    <script type="text/javascript" src="{{ STATIC_URL }}browse/js/browse.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}browse/js/browse_hdfs.js"></script>
+
+    <script>
+        {#$(document).ready(function () {#}
+        $("#modal-example").DataTable();
+        var table = $("#example").DataTable({
+            'columnDefs': [{
+                'targets': 0,
+                'searchable': false,
+                'orderable': false,
+                'className': 'dt-body-center'
+            }],
+            'order': [[1, 'asc']]
+        });
+        // Handle click on "Select all" control
+        $('#example_wrapper').on('click', '#example-select-all', function(){
+            $(this).closest('table').find('tbody input[type="checkbox"]').prop('checked', this.checked);
+            // Get all rows with search applied
+            {#var rows = table.rows({ 'search': 'applied' }).nodes();#}
+            // Check/uncheck checkboxes for all rows in the table
+            {#$(rows).find('input[type="checkbox"]').prop('checked', this.checked);#}
+        });
+        // Handle click on checkbox to set state of "Select all" control
+        $('#example_wrapper').on('change', 'tbody input[type="checkbox"]', function(){
+            // If checkbox is not checked
+            if(!this.checked){
+                var el = $('#example-select-all').get(0);
+                // If "Select all" control is checked and has 'indeterminate' property
+                if(el && el.checked && ('indeterminate' in el)){
+                    // Set visual state of "Select all" control
+                    // as 'indeterminate'
+                    el.indeterminate = true;
+                }
+            }
+        });
+
+        $("#upload-to-hdfs").click(function () {
+            $('#exampleModal').modal('show');
+
+            $.ajax({
+                type : "GET",
+                dataType : 'json',
+                data : {
+                    'directory_name': "",
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    {#'master_ip': '{{ master_ip }}',#}
+                },
+                url : '{% url 'browse_hdfs_directory' %}',
+                success : function(data) {
+                    var datas = data.FileStatus;
+                    var content = '';
+                    $("#modal-example").DataTable().destroy();
+                    for(var i=0; i<datas.length; i++){
+                        {#var rowNode = table.row.add( [ datas[i].permission, datas[i].owner, datas[i].group, datas[i].size, datas[i].name ] ).draw().node();#}
+                        console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                        content += '<tr role="row" class="odd">';
+                        {#content += '<td class="sorting_0"><input type="checkbox" name="selectedBox" class="selectedBox" value="'+datas[i].pathSuffix+'"></td>';#}
+                        content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                        content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                        content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                        content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                        if(datas[i].type === 'FILE'){
+                            content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                        }
+                        else {
+                            content += '<td class="sorting_6"><a style="display: block" class="directory_class">' + datas[i].pathSuffix + '</a></td>';
+                        }
+                        content += '</tr>';
+                    }
+                    $('#modal-example tbody').html(content);
+                    $('#modal-example').DataTable({
+                        'columnDefs': [{
+                            'targets': 0,
+                            'searchable': false,
+                            'orderable': false,
+                            'className': 'dt-body-center'
+                        }],
+                        'order': [[1, 'asc']]
+                    });
+
+                }
+            });
+
+        });
+        $("#modal-select-directory").click(function () {
+            let selectedArr = [];
+            $("#example_wrapper table tbody").find('input:checkbox[name=selectedBox]:checked').each(function() {
+                selectedArr.push($(this).val());
+            });
+            console.log(selectedArr);
+            $.ajax({
+                type : "POST",
+                dataType : 'json',
+                data : {
+                    'file_name': JSON.stringify(selectedArr),
+                    'root_folder': $("#directory").val(),
+                    'destination_folder': $("#modal-directory").val(),
+                    'node_id': '{{ id }}',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                url : "{% url 'files_to_hdfs_ajax' %}",
+                success : function (data) {
+                    if (data.success === 1) {
+                        alert("successfully send to hdfs");
+                        $.ajax({
+                            type : "GET",
+                            dataType : 'json',
+                            data : {
+                                'directory_name': $("#modal-directory").val(),
+                                'node_id': '{{ id }}',
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            },
+                            url : '{% url 'browse_hdfs_directory' %}',
+                            success : function(data) {
+                                if(data !== "") {
+                                    var datas = data.FileStatus;
+                                    var content = '';
+                                    $('#modal-example').DataTable().destroy();
+                                    for(var i=0; i<datas.length; i++){
+                                        {#var rowNode = table.row.add( [ datas[i].permission, datas[i].owner, datas[i].group, datas[i].size, datas[i].name ] ).draw().node();#}
+                                        console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                                        content += '<tr role="row" class="odd">';
+                                        content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                                        content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                                        content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                                        content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                                        if(datas[i].type === 'FILE'){
+                                            content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                                        }
+                                        else {
+                                            content += '<td class="sorting_6"><a style="display: block">' + datas[i].pathSuffix + '</a></td>';
+                                        }
+                                        content += '</tr>';
+                                    }
+                                    $("#modal-example tbody").html(content);
+                                    $('#modal-example').DataTable();
+                                }
+                                else {
+                                    location.reload();
+                                }
+
+
+
+                            }
+                        });
+
+                    }
+                    else if (data.success === 0) {
+                        alert(JSON.stringify(data.msg[0]));
+
+                        $.ajax({
+                            type : "GET",
+                            dataType : 'json',
+                            data : {
+                                'directory_name': $("#modal-directory").val(),
+                                'node_id': '{{ id }}',
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            },
+                            url : '{% url 'browse_hdfs_directory' %}',
+                            success : function(data) {
+                                var datas = data.FileStatus;
+                                var content = '';
+                                $('#modal-example').DataTable().destroy();
+                                for(var i=0; i<datas.length; i++){
+                                    {#var rowNode = table.row.add( [ datas[i].permission, datas[i].owner, datas[i].group, datas[i].size, datas[i].name ] ).draw().node();#}
+                                    console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                                    content += '<tr role="row" class="odd">';
+                                    content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                                    content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                                    content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                                    content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                                    if(datas[i].type === 'FILE'){
+                                        content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                                    }
+                                    else {
+                                        content += '<td class="sorting_6"><a style="display: block">' + datas[i].pathSuffix + '</a></td>';
+                                    }
+                                    content += '</tr>';
+                                }
+                                $("#modal-example tbody").html(content);
+                                $('#modal-example').DataTable();
+
+
+                            }
+                        });
+                    }
+
+                }
+            });
+        });
+
+        $("#example").on("click", "a.directory_class", function() {
+            var data_click = {
+                'table_id': $("#example"),
+                'directory_id': $("#directory"),
+                'clicked_directory': $(this).html(),
+                'node_id': '{{ id }}',
+                'browse_url': "{% url 'browse_directory_ajax' %}",
+                'checkbox': true,
+                'csrf': '{{ csrf_token }}'
+            }
+            browse_directory_local(data_click);
+        });
+
+
+        $("#back-button").click(function () {
+            var data_back = {
+                'table_id': $("#example"),
+                'directory_id': $("#directory"),
+                'node_id': '{{ id }}',
+                'back_url': "{% url 'back_with_ajax' %}",
+                'checkbox': true,
+                'csrf': '{{ csrf_token }}'
+            }
+            back_local(data_back);
+        });
+
+
+        $("#modal-example").on("click", "a", function() {
+            var modal_name = $(this).html();
+            var modal_previous_directory = $("#modal-directory").val();
+            var modal_after_directory = modal_previous_directory + '/' + modal_name;
+            $("#modal-directory").val(modal_after_directory);
+
+            $.ajax({
+                type : "GET",
+                dataType : 'json',
+                data : {
+                    'directory_name': modal_after_directory,
+                    'node_id': '{{ id }}',
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                url : '{% url 'browse_hdfs_directory' %}',
+                success : function(data) {
+                    var datas = data.FileStatus;
+                    var content = '';
+                    $('#modal-example').DataTable().destroy();
+                    for(var i=0; i<datas.length; i++){
+                        {#var rowNode = table.row.add( [ datas[i].permission, datas[i].owner, datas[i].group, datas[i].size, datas[i].name ] ).draw().node();#}
+                        console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                        content += '<tr role="row" class="odd">';
+                        content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                        content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                        content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                        content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                        if(datas[i].type === 'FILE'){
+                            content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                        }
+                        else {
+                            content += '<td class="sorting_6"><a style="display: block">' + datas[i].pathSuffix + '</a></td>';
+                        }
+                        content += '</tr>';
+                    }
+                    $("#modal-example tbody").html(content);
+                    $('#modal-example').DataTable();
+
+
+                }
+            });
+
+        });
+
+
+        $("#back-button-modal").click(function () {
+            $.ajax({
+                type : "GET",
+                dataType : 'json',
+                data : {
+                    'directory_name': $('#modal-directory').val(),
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                url : '{% url 'back_with_hdfs_ajax' %}',
+                success : function(data) {
+                    var datas = data.FileStatus;
+                    var content = '';
+                    $("#modal-example").DataTable().destroy();
+                    for(var i=0; i<datas.length; i++){
+                        console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                        content += '<tr role="row" class="odd">';
+                        content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                        content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                        content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                        content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                        if(datas[i].type === 'FILE'){
+                            content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                        }
+                        else {
+                            content += '<td class="sorting_6"><a style="display: block" class="directory_class">' + datas[i].pathSuffix + '</a></td>';
+                        }
+                        content += '</tr>';
+                    }
+                    $("#modal-example tbody").html(content);
+                    $('#modal-example').DataTable();
+                    $('#modal-directory').val(data.back_directory);
+                }
+            });
+        });
+
+        $("#mkdir-button-modal").click(function () {
+            $('#mkdirModal').modal('show');
+
+            $("#mkdir-create").click(function () {
+                if($("#mkdir-modal-directory").val()==""){
+                    alert("please fill the input box to create folder")
+                }
+                else {
+
+                    $.ajax({
+                        type : "GET",
+                        dataType : 'json',
+                        data : {
+                            'root_folder': $("#modal-directory").val(),
+                            'folder_name': $("#mkdir-modal-directory").val(),
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        url : "{% url 'create_dir_hdfs_ajax' %}",
+                        success : function(response) {
+                            if(response.success){
+                                $("#mkdirModal").modal('hide');
+
+                                $.ajax({
+                                    type : "GET",
+                                    dataType : 'json',
+                                    data : {
+                                        'directory_name': $("#modal-directory").val(),
+                                        'node_id': '{{ id }}',
+                                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                    },
+                                    url : '{% url 'browse_hdfs_directory' %}',
+                                    success : function(data) {
+                                        var datas = data.FileStatus;
+                                        var content = '';
+                                        $('#modal-example').DataTable().destroy();
+                                        for(var i=0; i<datas.length; i++){
+                                            console.log(datas[i].permission, datas[i].owner, datas[i].group, datas[i].length, datas[i].pathSuffix);
+                                            content += '<tr role="row" class="odd">';
+                                            content += '<td class="sorting_1">' + datas[i].permission + '</td>';
+                                            content += '<td class="sorting_2">' + datas[i].owner + '</td>';
+                                            content += '<td class="sorting_3">' + datas[i].group + '</td>';
+                                            content += '<td class="sorting_4">' + datas[i].length + '</td>';
+                                            if(datas[i].type === 'FILE'){
+                                                content += '<td class="sorting_5">' + datas[i].pathSuffix + '</td>';
+                                            }
+                                            else {
+                                                content += '<td class="sorting_6"><a style="display: block">' + datas[i].pathSuffix + '</a></td>';
+                                            }
+                                            content += '</tr>';
+                                        }
+                                        $("#modal-example tbody").html(content);
+                                        $('#modal-example').DataTable();
+
+
+                                    }
+
+
+                                });
+                            }
+                            else {
+                                location.reload();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        $("#archive").click(function () {
+            let selectedArr2 = [];
+            $('#example_wrapper table tbody').find('input:checkbox[name=selectedBox]:checked').each(function() {
+                selectedArr2.push($(this).val());
+            });
+
+            if (selectedArr2.length >= 1){
+                $('#archiveModal').modal('show');
+            }
+            else {
+                alert("please select at least one file or folder");
+            }
+        });
+
+        $("#archive-folder").click(function () {
+            let selectedArr1 = [];
+            $('#example_wrapper table tbody').find('input:checkbox[name=selectedBox]:checked').each(function() {
+                selectedArr1.push($(this).val());
+            });
+            console.log(selectedArr1);
+            if ($("#archive-modal-directory").val()==""){
+                alert("please fill the input box to create folder")
+            } else
+            {
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data : {
+                        'file_name': JSON.stringify(selectedArr1),
+                        'root_folder': $("#directory").val(),
+                        'zip_folder_name': $("#archive-modal-directory").val(),
+                        'override': 'false',
+                        'node_id': '{{ id }}',
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    url : "{% url 'archive_files_local' %}",
+                    success : function (data) {
+                        if (data.success === 1) {
+                            alert("successfully archived");
+                            $('#archiveModal').modal('hide');
+                            var data_click = {
+                                'table_id': $("#example"),
+                                'directory_id': $("#directory"),
+                                'clicked_directory': "",
+                                'node_id': '{{ id }}',
+                                'browse_url': "{% url 'browse_directory_ajax' %}",
+                                'checkbox': true,
+                                'csrf': '{{ csrf_token }}'
+                            }
+                            browse_directory_local(data_click);
+
+                        }
+
+                        else if (data.success === 0) {
+                            console.log(JSON.stringify(data.msg));
+                            if (data.msg === "exists"){
+                                var user_response = confirm("file already exists...Do yo want to overwrite?");
+                                if (user_response === true){
+
+                                    $.ajax({
+                                        type : "POST",
+                                        dataType : 'json',
+                                        data : {
+                                            'file_name': JSON.stringify(selectedArr1),
+                                            'root_folder': $("#directory").val(),
+                                            'zip_folder_name': $("#archive-modal-directory").val(),
+                                            'override': 'true',
+                                            'node_id': '{{ id }}',
+                                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                        },
+                                        url : "{% url 'archive_files_local' %}",
+                                        success : function (data) {
+                                            if (data.success === 1) {
+                                                alert("successfully archived");
+                                                $('#archiveModal').modal('hide');
+                                                var data_click = {
+                                                    'table_id': $("#example"),
+                                                    'directory_id': $("#directory"),
+                                                    'clicked_directory': "",
+                                                    'node_id': '{{ id }}',
+                                                    'browse_url': "{% url 'browse_directory_ajax' %}",
+                                                    'checkbox': true,
+                                                    'csrf': '{{ csrf_token }}'
+                                                }
+                                                browse_directory_local(data_click);
+
+                                            }
+
+                                        }
+                                    });
+
+                                }
+
+
+                            }
+
+                            else {
+                                alert(JSON.stringify(data.msg[0]));
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+
+
+        $("#extract").click(function () {
+            let selectedArr1 = [];
+            $('#example_wrapper table tbody').find('input:checkbox[name=selectedBox]:checked').each(function() {
+                selectedArr1.push($(this).val());
+            });
+            console.log(selectedArr1);
+            if (selectedArr1.length > 1){
+                alert("please select only one file")
+            }
+
+            else if (selectedArr1.length < 1){
+                alert("please select at least one file");
+            }
+            else
+            {
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data : {
+                        'file_name': JSON.stringify(selectedArr1),
+                        'root_folder': $("#directory").val(),
+                        'override': 'false',
+                        'node_id': '{{ id }}',
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    url : "{% url 'extract_files_local' %}",
+                    success : function (data) {
+                        if (data.success === 1) {
+                            alert("successfully extracted");
+
+                            var data_click = {
+                                'table_id': $("#example"),
+                                'directory_id': $("#directory"),
+                                'clicked_directory': "",
+                                'node_id': '{{ id }}',
+                                'browse_url': "{% url 'browse_directory_ajax' %}",
+                                'checkbox': true,
+                                'csrf': '{{ csrf_token }}'
+                            }
+                            browse_directory_local(data_click);
+
+                        }
+
+                        else if (data.success === 0) {
+                            if (data.msg === "exists"){
+                                var user_response = confirm("file already exists...Do yo want to overwrite?");
+                                if (user_response == true){
+
+                                    //hello its us
+                                    $.ajax({
+                                        type : "POST",
+                                        dataType : 'json',
+                                        data : {
+                                            'file_name': JSON.stringify(selectedArr1),
+                                            'root_folder': $("#directory").val(),
+                                            'override': 'true',
+                                            'node_id': '{{ id }}',
+                                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                                        },
+                                        url : "{% url 'extract_files_local' %}",
+                                        success : function (data) {
+                                            if (data.success === 1) {
+                                                alert("successfully extracted");
+
+                                                var data_click = {
+                                                    'table_id': $("#example"),
+                                                    'directory_id': $("#directory"),
+                                                    'clicked_directory': "",
+                                                    'node_id': '{{ id }}',
+                                                    'browse_url': "{% url 'browse_directory_ajax' %}",
+                                                    'checkbox': true,
+                                                    'csrf': '{{ csrf_token }}'
+                                                }
+                                                browse_directory_local(data_click);
+
+                                            }
+
+
+                                        }
+                                    });
+
+                                }
+                            }
+                            else {
+                                alert(JSON.stringify(data.msg[0]));
+                            }
+
+                        }
+                    }
+                });
+            }
+        });
+
+        // make directory in local node
+
+        $("#make-directory-button").click(function () {
+            make_directory('{{ csrf_token }}', "{% url 'create_dir_local_ajax' %}", "{% url 'browse_directory_ajax' %}"
+                ,'{{ node_ip }}' ,'{{ id }}')
+        });
+
+
+
+        $("#copy-to-button").click(function () {
+            let selectedArr3 = [];
+            $('#example_wrapper table tbody').find('input:checkbox[name=selectedBox]:checked').each(function() {
+                selectedArr3.push($(this).val());
+            });
+            console.log(selectedArr3);
+
+            if (selectedArr3.length >= 1){
+                $("#copy_move_Modal").modal('show');
+                $("#copy_move_modal_table").DataTable();
+
+                $("#copy_move_modal_select").click(function () {
+
+                    var source = $("#directory").val();
+                    var files_list = selectedArr3;
+                    var destination = $("#copy-move-modal-directory").val();
+                    console.log(source , files_list, destination);
+                    $.ajax({
+                        type : "POST",
+                        dataType : 'json',
+                        data : {
+                            'files': JSON.stringify(files_list),
+                            'source': source,
+                            'destination': destination,
+                            'node_id': '{{ id }}',
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        url : "{% url 'copy_on_node' %}",
+                        success: function (data) {
+                            if (data.success === 1){
+                                alert("successfully copied");
+                                location.reload()
+                            }
+                            else {
+                                alert(data.msg);
+                            }
+                            var data_click = {
+                                'table_id': $("#copy_move_modal_table"),
+                                'directory_id': $("#copy-move-modal-directory"),
+                                'clicked_directory': "",
+                                'node_id': '{{ id }}',
+                                'browse_url': "{% url 'browse_directory_ajax' %}",
+                                'checkbox': false,
+                                'csrf': '{{ csrf_token }}'
+                            }
+                            browse_directory_local(data_click);
+                        }
+
+                    });
+
+                });
+            }
+            else {
+                alert("please select at least one file or folder");
+            }
+
+        });
+
+
+        $("#copy_move_modal_table").on('click', 'a.directory_class', function(){
+            var data_click = {
+                'table_id': $("#copy_move_modal_table"),
+                'directory_id': $("#copy-move-modal-directory"),
+                'clicked_directory': $(this).html(),
+                'node_id': '{{ id }}',
+                'browse_url': "{% url 'browse_directory_ajax' %}",
+                'checkbox': false,
+                'csrf': '{{ csrf_token }}'
+            }
+            browse_directory_local(data_click);
+        });
+
+        $("#copy_move_back_button").click(function () {
+            var data_back = {
+                'table_id': $("#copy_move_modal_table"),
+                'directory_id': $("#copy-move-modal-directory"),
+                'node_id': '{{ id }}',
+                'back_url': "{% url 'back_with_ajax' %}",
+                'checkbox': false,
+                'csrf': '{{ csrf_token }}'
+            }
+            back_local(data_back);
+        });
+
+        $("#move-button").click(function () {
+            var data_move = {
+                'node_id': '{{ id }}',
+                'browse_url': "{% url 'browse_directory_ajax' %}",
+                'move_url': "{% url 'move_on_node' %}",
+                'csrf': '{{ csrf_token }}'
+            }
+            move_file(data_move);
+        });
+
+        $("#rename").click(function () {
+            data_rename = {
+                'node_id': '{{ id }}',
+                'rename_url': "{% url 'rename_file' %}",
+                'browse_url': "{% url 'browse_directory_ajax' %}",
+                'csrf': '{{ csrf_token }}'
+            }
+            rename_file(data_rename);
+
+        });
+
+        $("#delete-button").click(function () {
+            var data_delete = {
+                'node_id': '{{ id }}',
+                'browse_url': "{% url 'browse_directory_ajax' %}",
+                'delete_url': "{% url 'delete_files' %}",
+                'csrf': '{{ csrf_token }}'
+            }
+            delete_file(data_delete);
+        });
+        $("#example_wrapper tbody").on('click', 'a.file_class', function () {
+            console.log("yes im clicked");
+            $("#head_tailModal").modal('show');
+            $(".head_tail_text").val("");
+            $("#head_tailModalLabel").html($(this).text());
+
+        });
+        $("#head_button").click(function () {
+            console.log("head_button clicked");
+            data_var = {
+                'node_id': '{{ id }}',
+                'head_tail_url': '{% url "head_file" %}',
+                'csrf': '{{ csrf_token }}'
+            }
+            head_tail(data_var);
+        });
+
+        $("#tail_button").click(function () {
+            console.log("tail_button clicked");
+            data_var = {
+                'node_id': '{{ id }}',
+                'head_tail_url': '{% url "tail_file" %}',
+                'csrf': '{{ csrf_token }}'
+            }
+            head_tail(data_var);
+        });
+
+
+
+
+    </script>
+{% endblock %}

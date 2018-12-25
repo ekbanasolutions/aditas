@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% block title %}Spark metrices {% endblock %}
+{% load static %}
+
+{% block content %}
+    <div class="page-header d-flex justify-content-between">
+        <h2>SPARK</h2>
+        <div class="">
+            {% if client %}
+                <a class="btn btn-primary restart_all" data-ip="{{ master_ip }}" href="#" role="button"
+                   id="restart-all-spark">Restart all</a>
+            {% endif %}
+            {% if client and not error_in_conf_file %}
+                <a class="btn btn-danger stop_all" href="#" role="button" id="stop-all-spark">Stop all</a>
+                </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <canvas id="parent_chart"></canvas>
+                            </div>
+                            <div class="col-md-6">
+                                <canvas id="parent_chart_mem"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <div class="page-header">
+                                <h3>Spark Master</h3>
+                            </div>
+                            <table class="table table-striped tbl-no-bdr">
+                                <tbody>
+                                {% if spark_master %}
+                                    {% if spark_master.ip != '' %}
+                                        <tr>
+                                            <td>
+                                                {% if spark_master.status == "RUNNING" %}
+                                                    <div class="service_running"></div>
+                                                {% else %}
+                                                    <div class="service_dead"></div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="name-title clearfix">
+                                                    <p class="node_address">{{ spark_master.ip }}</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-group">
+                                                    <p>{{ spark_master.hostname }}</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-group">
+                                                    <p>{{ spark_master.name }}</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-group">
+                                                    <p>{{ spark_master.fqdn }}</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'configuration_show_each_node' %}?node={{ spark_master.ip }}&service_id={{ service_id }}">show
+                                                    configuration</a>
+                                            </td>
+                                            <td>
+                                                <div class="group-tag">
+                                                    <a class="btn btn-primary btn-sm sm_restart" href="#" role="button"
+                                                       id="editbtn">Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm sm_stop">Stop
+                                                    </button>
+                                                </div><!-- ends group-tag -->
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5"><p>You need to install client on this node to view it's
+                                                detail</p></td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="page-header">
+                            <h3>Alive Spark Worker</h3>
+                        </div>
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for spark_worker in  alive_spark_workers %}
+                                <tr>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p class="node_address">{{ spark_worker.ip }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.hostname }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.name }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.state }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.last_heartbeat }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ spark_worker.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if spark_worker.client_installed %}
+                                                <a class="btn btn-primary btn-sm sw_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm sw_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm" disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="page-header">
+                            <h3>Dead Spark Worker</h3>
+                        </div>
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for spark_worker in  dead_spark_workers %}
+                                <tr>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p class="node_address">{{ spark_worker.ip }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.hostname }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.name }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.state }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ spark_worker.last_heartbeat }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ spark_worker.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if spark_worker.client_installed %}
+                                                <a class="btn btn-primary btn-sm sw_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       title={{ title }}>Restart</a>
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+            {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ STATIC_URL }}admin/js/boot_services.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+
+            var total_cores = [];
+            var cores_used = [];
+            var cores_free = [];
+            var total_memory = [];
+            var memory_used = [];
+            var ip = [];
+
+            {% for node in alive_spark_workers %}
+                total_cores.push({{ node.total_cores }});
+                cores_used.push({{ node.cores_used }});
+                cores_free.push({{ node.cores_free }});
+                total_memory.push({{ node.total_memory }});
+                memory_used.push({{ node.memory_used }});
+                ip.push("{{ node.ip }}");
+            {% endfor %}
+
+            var cores = [
+                {
+                    label: 'Total',
+                    data: total_cores,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Used',
+                    data: cores_used,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var mem = [
+                {
+                    label: 'Total',
+                    data: total_memory,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Used',
+                    data: memory_used,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var coresData = {
+                labels: ip,
+                datasets: cores
+            };
+
+            var memData = {
+                labels: ip,
+                datasets: mem
+            };
+
+            var chartOptions_cpu = {
+                title: {
+                    display: true,
+                    text: "CPU cores used by Workers"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            var chartOptions_memory = {
+                title: {
+                    display: true,
+                    text: "Memory used by Workers"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            new Chart($('#parent_chart'), {
+                type: 'bar',
+                data: coresData,
+                options: chartOptions_cpu
+            });
+
+            new Chart($('#parent_chart_mem'), {
+                type: 'bar',
+                data: memData,
+                options: chartOptions_memory
+            });
+
+
+            var restart_status = '{{ restart_status }}';
+            console.log(restart_status);
+            if (restart_status == 1) {
+                $("#restart-all-hdfs").attr('class', 'btn btn-danger btn-sm');
+            }
+
+            $(".sw_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "Before restarting this worker, make sure other systems dependent on spark are gracefully stopped";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "sw_restart" %}', "msg": msg}
+                service_operation(data)
+            });
+
+            $(".sw_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "Before stopping this worker, make sure other systems dependent on spark are gracefully stopped";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "sw_stop" %}', "msg": msg}
+                service_operation(data)
+            });
+
+            $(".sm_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "Before restarting spark master, make sure other systems dependent on spark are gracefully stopped";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "sm_restart" %}', "msg": msg}
+                service_operation(data)
+            });
+
+            $(".sm_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "Before stopping spark master, make sure other systems dependent on spark are gracefully stopped";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "sm_stop" %}', "msg": msg}
+                service_operation(data)
+            });
+
+            $(".restart_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var msg = "Before restarting spark, make sure other systems dependent on spark are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "s_all_restart" %}',
+                    "msg": msg
+                }
+                service_operation(data)
+            });
+
+            $(".stop_all").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "Before stopping spark, make sure other systems dependent on spark are gracefully stopped";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "s_all_stop" %}', "msg": msg}
+                service_operation(data)
+            });
+
+        });
+
+    </script>
+{% endblock %}

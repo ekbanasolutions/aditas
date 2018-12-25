@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% block title %}HDFS metrics {% endblock %}
+{% load static %}
+{% block content %}
+
+    <div class="page-header d-flex justify-content-between">
+        <h2>HDFS</h2>
+        <div class="">
+            {% if client %}
+            <a class="btn btn-primary restart_all" data-id="{{ master_id }}" data-ip="{{ master_ip }}" href="#"
+               role="button" id="restart-all-hdfs">Restart all</a>
+        {% endif %}
+        {% if client  and not error_in_conf_file %}
+            <a class="btn btn-danger stop_all" href="#" data-ip="{{ master_ip }}" role="button" id="stop-all-hdfs">Stop
+                all</a>
+        </div>
+    </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <canvas id="parent_chart" style="width:100%" height="400"></canvas>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Active Namenode</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            {% if active_node.ip != '' %}
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        {% if active_node.status == "RUNNING" %}
+                                            <div class="service_running"></div>
+                                        {% else %}
+                                            <div class="service_dead"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <p class="node_address" data-id="{{ active_node.id }}">{{ active_node.ip }}</p>
+                                    </td>
+                                    <td>
+                                        <p> {{ active_node.name }} </p>
+                                    </td>
+                                    <td>
+                                        <p> {{ active_node.hostname }} </p>
+                                    </td>
+                                    <td>
+                                        <p> {{ active_node.fqdn }} </p>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ active_node.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+
+                                    <td>
+                                        <div class="group-tag">
+
+
+                                            <a class="btn btn-primary btn-sm nn_restart" href="#" role="button"
+                                               id="editbtn">restart</a>
+                                            <button type="submit" class="btn btn-danger btn-sm nn_stop">Stop</button>
+                                        </div><!-- ends group-tag -->
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5"><p>You need to install client on this node to view it's detail</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Standby Namenode</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            {% if standby_node.client_installed %}
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        {% if standby_node.status == "RUNNING" %}
+                                            <div class="service_running"></div>
+                                        {% else %}
+                                            <div class="service_dead"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <p class="node_address"
+                                           data-id="{{ standby_node.id }}">{{ standby_node.ip }}</p>
+                                    </td>
+                                    <td>
+                                        <p>  {{ standby_node.name }} </p>
+                                    </td>
+                                    <td>
+                                        <p>  {{ standby_node.hostname }} </p>
+                                    </td>
+                                    <td>
+                                        <p> {{ standby_node.fqdn }} </p>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ standby_node.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+                                    <td>
+                                        <div class="group-tag">
+
+                                            <a class="btn btn-primary btn-sm nn_restart" href="#" role="button"
+                                               id="editbtn">restart</a>
+                                            <button type="submit" class="btn btn-danger btn-sm nn_stop">Stop</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5"><p>You need to install client on this node to view it's detail</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3> Alive Datanodes</h3>
+                    </div>
+                    <div class="table-responsive">
+
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% if name_livenodes %}
+                                {% for livenode in name_livenodes %}
+                                    <tr>
+                                        <td>
+                                            <p class="node_address"
+                                               data-id="{{ livenode.node_id }}">{{ livenode.ip }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ livenode.name }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ livenode.hostname }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ livenode.fqdn }}</p>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ livenode.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                        <td>
+                                            {% if livenode.client_installed %}
+                                                <a class="btn btn-primary btn-sm dn_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm dn_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm " href="#" role="button"
+                                                       id="restart_node"
+                                                       disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm " disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5"><p>No live datanodes</p></td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Dead Datanodes</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            {% if name_deadnodes %}
+
+                                <thead>
+                                <tr>
+                                    <th><p>Dead Nodes</p></th>
+                                    <th><p>Server Name</p></th>
+                                    <th><p>hostname</p></th>
+                                    <th><p>fqdn</p></th>
+                                    <th class="text-center"><p>Action</p></th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for deadnode in name_deadnodes %}
+                                    <tr>
+                                        <td>
+                                            <p class="name-title node_address"
+                                               data-id="{{ deadnode.node_id }}">{{ deadnode.ip }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ deadnode.name }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ deadnode.hostname }}</p>
+                                        </td>
+                                        <td>
+                                            <p>{{ deadnode.fqdn }}</p>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ deadnode.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                        <td>
+
+                                            {% if  deadnode.client_installed %}
+                                                <a class="btn btn-primary btn-sm dn_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm " href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5"><p>No dead datanodes</p></td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ STATIC_URL }}admin/js/boot_services.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+
+            var capacity = [];
+            var non_dfs_used = [];
+            var used_space = [];
+            var ip = [];
+
+            {% for node in name_livenodes %}
+                capacity.push({{ node.capacity }});
+                non_dfs_used.push({{ node.non_dfs_used }});
+                used_space.push({{ node.used_space }});
+                ip.push("{{ node.ip }}");
+            {% endfor %}
+            var dsk = [
+                {
+                    label: 'Total',
+                    data: capacity,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Non Dfs used',
+                    data: non_dfs_used,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Dfs used',
+                    data: used_space,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var dskData = {
+                labels: ip,
+                datasets: dsk
+            };
+
+            var chartOptions = {
+                title: {
+                    display: true,
+                    text: "Disk used by Datanodes"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            new Chart($('#parent_chart'), {
+                type: 'bar',
+                data: dskData,
+                options: chartOptions
+            });
+
+            var restart_status = '{{ restart_status }}';
+            if (restart_status === '1') {
+                $("#restart-all-yarn").attr('class', 'btn btn-danger btn-sm');
+            }
+
+            $(".dn_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text().split(":")[0];
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting datanode, make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "dn_restart" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "DataNode"
+                };
+                service_operation(data)
+            });
+
+            $(".dn_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text().split(":")[0];
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before datanode , make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "dn_stop" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "DataNode"
+                };
+                service_operation(data)
+            });
+
+            $(".nn_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting namenode, make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "nn_restart" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "NameNode"
+                };
+                service_operation(data)
+            });
+
+            $(".nn_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before stopping namenode, make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "nn_stop" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "NameNode"
+                };
+                service_operation(data)
+            });
+
+            $(".restart_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before restarting hdfs, make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_all_restart" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "NameNode"
+                };
+                service_operation(data)
+            });
+
+            $(".stop_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before stopping hdfs, make sure other systems dependent on hdfs are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_all_stop" %}',
+                    "msg": msg,
+                    "service_name": "hdfs",
+                    "server_type": "NameNode"
+                };
+                service_operation(data)
+            });
+        });
+
+    </script>
+{% endblock %}

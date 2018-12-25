@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}Change Users {% endblock %}
+{% load static %}
+{% block links %}
+    {#    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">#}
+    {#    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css">#}
+{% endblock %}
+{% block content %}
+    {% if user_own.is_superuser %}
+
+        <div class="panlel panel-default form-horizontal">
+        <div class="panel-body">
+            <div class="page-header"><h3>Username/Password</h3></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="id_username">Username:</label>
+                <div class="col-sm-4">
+                    <input name="username" value="{{ user_data.user_name }}" id="id_username" required=""
+                           type="text" class="form-control">
+                    <div class="help">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="id_password">Password:</label>
+                <div class="col-sm-4">
+                    <div class="help">Raw passwords are not stored, so there is no way to see this user's
+                        password, but you can change the password using <a href="#" data-toggle="modal"
+                                                                           data-target="#myModal">this form</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="page-header"><h3>Personal info</h3></div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="id_first_name">First name:</label>
+                <div class="col-sm-4">
+                    <input name="first_name" value="{{ user_data.first_name }}" id="id_first_name" type="text"
+                           class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="id_last_name">Last name:</label>
+                <div class="col-sm-4">
+                    <input name="last_name" value="{{ user_data.last_name }}" id="id_last_name" type="text"
+                           class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label" for="id_email">Email address:</label>
+                <div class="col-sm-4">
+                    <input name="email" value="{{ user_data.email }}" id="id_email" type="email"
+                           class="form-control">
+                </div>
+            </div>
+        </div>
+
+        {% if not user_data.id == user_id %}
+
+            <div class="panel-body">
+                <div class="page-header"><h3>Permissions</h3></div>
+                <div class="form-group">
+                    <div class="col-sm-8">
+                        <div class="checkbox-inline">
+                            <label class="switch" style="float: left;">
+                                {% if user_data.is_active %}
+                                    <input name="is_active" id="id_is_active" checked type="checkbox">
+                                {% else %}
+                                    <input name="is_active" id="id_is_active" type="checkbox">
+                                {% endif %}
+                                <span class="slider round"></span>
+                            </label>
+                            <span style="display: inline-block; margin: 7px 0 0 10px">Active</span>
+                        </div>
+                        <div class="checkbox-inline">
+                            <label class="switch" style="float: left;">
+                                {% if user_data.is_superuser %}
+                                    <input name="is_superuser" id="id_is_superuser" checked type="checkbox">
+                                {% else %}
+                                    <input name="is_superuser" id="id_is_superuser" type="checkbox">
+                                {% endif %}
+                                <span class="slider round"></span>
+                            </label>
+                            <span style="display: inline-block; margin: 7px 0 0 10px">Superuser status</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if user_data.is_superuser %}
+                <div class="panel-body" style="display:none" id="assign_group">
+            {% else %}
+                <div class="panel-body" id="assign_group">
+            {% endif %}
+        <div class="page-header"><h3>Groups</h3></div>
+        <div class="table-responsives">
+            <div id="example_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <table id="example" class="table table-striped table-bordered dataTable"
+                               style="width: 100%;" role="grid" aria-describedby="example_info">
+                            <thead>
+                            <tr role="row">
+                                <th style="width: 50px !important;">
+                                    <input type="checkbox" name="select_all" value="1"
+                                           id="example-select-all"></th>
+                                <th class="sorting_asc" tabindex="0" aria-controls="example"
+                                    rowspan="1" colspan="1" style="width: 400px;"
+                                    aria-sort="ascending"
+                                    aria-label="Name: activate to sort column descending">
+                                    Groups
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% if groups %}
+                                {% for group in groups %}
+                                    <tr role="row" class="odd">
+                                        {% if user_groups %}
+                                            {% if group.id in user_groups %}
+                                                <td class="sorting_0"><input type="checkbox"
+                                                                             name="selectedBox"
+                                                                             class="selectedBox"
+                                                                             checked
+                                                                             value="{{ group.id }}">
+                                                </td>
+                                            {% else %}
+                                                <td class="sorting_0"><input type="checkbox"
+                                                                             name="selectedBox"
+                                                                             class="selectedBox"
+                                                                             value="{{ group.id }}">
+                                                </td>
+                                            {% endif %}
+                                        {% else %}
+                                            <td class="sorting_0"><input type="checkbox"
+                                                                         name="selectedBox"
+                                                                         class="selectedBox"
+                                                                         value="{{ group.id }}">
+                                        {% endif %}
+                                        <td class="sorting_1">{{ group.name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <th></th>
+                                <th rowspan="1" colspan="1">Groups</th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        </div>
+            <br/>
+        <input type="submit" class="btn btn-primary pull-right user-save">
+
+        {% endif %}
+    </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade custom-modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Change Password</h4>
+                    </div>
+                    <div class="modal-body clearfix">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-md-4 control-label" for="">Old Password:</label>
+                                <div class="col-md-6">
+                                    <input type="password" name="" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-4 control-label" for="">New Password:</label>
+                                <div class="col-md-6">
+                                    <input type="password" name="" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-md-4 control-label" for="">Confirm Password:</label>
+                                <div class="col-md-6">
+                                    <input type="password" name="" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button class="btn btn-primary" type="submit" name="submit">Save</button>
+            </div>
+        </div>
+
+    {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+    <link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+
+    <script type="text/javascript" src="{{ STATIC_URL }}admin/js/user_group.js"></script>
+
+    <script type="text/javascript">
+
+        $('#id_is_superuser').change(function () {
+            if (this.checked) {
+                console.log("on");
+                $('#assign_group').slideUp(500);
+            } else {
+                console.log("off");
+                $('#assign_group').slideDown(500);
+            }
+        });
+
+        $('.user-save').on('click', function () {
+            var data = {
+                'post_url': "{% url 'change_user' user_data.id  %}",
+                'success_url': "{% url 'users_index' %}",
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+            save_user(data);
+        });
+
+    </script>
+{% endblock %}

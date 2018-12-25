@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    purge)
+    array=(
+    "/etc/aditas/agent"
+    "/usr/share/aditas/agent"
+    )
+    for i in "${array[@]}"
+    do
+            if [[ -d "$i" ]]; then
+                rm -rf "$i"
+            fi
+    done
+
+    if [[ -d "/etc/aditas/aditasenv" ]]; then
+        if [[ ! -d "/usr/share/aditas/server" ]]; then
+            rm -rf "/etc/aditas/aditasenv"
+        fi
+    fi
+
+    ;;
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,1 @@
+DELETE FROM administer_nodes where ip=:'user_ip';

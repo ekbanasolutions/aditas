@@ -1,0 +1,69 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          Aditas agent
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Aditas Agent
+# Description:       Starts monitoring scheduler folder
+### END INIT INFO
+
+# Change the next 2 lines to suit where you install your script
+# and what you want to call it
+
+DIR=/usr/share/aditas/agent/Main
+DAEMON=$DIR/route_apps.py
+
+PID=$(pgrep -f route_apps.py)
+
+do_start () {
+    $DAEMON > /dev/null 2>&1 & disown
+}
+do_stop () {
+    kill -9 $(pgrep -f route_apps.py)
+}
+
+case "$1" in
+
+    start|stop)
+        do_${1}
+        ;;
+
+    restart|reload|force-reload)
+        do_stop
+        do_start
+        ;;
+
+    status)
+        if [[ $PID ]]; then
+            echo "Aditas Agent is Running with pid :
+$PID"
+        else
+            echo "Aditas Agent is not Running"
+        fi
+        ;;
+
+    --version|-v)
+        echo "Aditas-agent: V-0.1.0"
+        ;;
+
+    --help|-h)
+        echo "Usage: service Aditas-agent {start|stop|restart|status|--version|-v}
+
+status          returns the status of Aditas-agent
+start           starts Aditas-agent
+stop            stops Aditas-agent
+restart         restarts Aditas-agent
+--version|-v	returns the version of Aditas-agent
+"
+    ;;
+
+    *)
+        echo "use Aditas-agent --help or Aditas-agent -h to view its usage"
+        exit 1
+        ;;
+
+esac
+exit 0

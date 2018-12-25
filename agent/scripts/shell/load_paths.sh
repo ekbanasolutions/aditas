@@ -1,0 +1,8 @@
+export ADITAS_HOME="/usr/share/aditas/agent"
+export ADITAS_SCRIPT_DIR="/etc/aditas/agent/scripts/shell"
+export ADITAS_INSTALLER_SCRIPT="${ADITAS_SCRIPT_DIR}/installer.sh"
+export ADITAS_DBCONF_VALUES="${ADITAS_SCRIPT_DIR}/get_set_variables.sh"
+export SQL_SCRIPT="${ADITAS_SCRIPT_DIR}/db.sh"
+export SET_ENV_FILE="${ADITAS_SCRIPT_DIR}/set_env.sh"
+export ADITAS_VENV_PATH="/etc/aditas/aditasenv"
+export ADITAS_BIN="${ADITAS_HOME}/bin"

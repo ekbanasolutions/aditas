@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+
+    <title>{% block title %}Aditas - Server Mangement Utility{% endblock %}</title>
+    <!-- <link rel="stylesheet" href="{{ STATIC_URL }}account/vendor/bootstrap/css/bootstrap.css"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:300,400,500,600,700" rel="stylesheet">
+    <link href="{{ STATIC_URL }}base/css/custom.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}base/css/bigdataService.css" rel="stylesheet" media="screen">
+    <link href="{{ STATIC_URL }}base/css/custom-media.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" href="{{ STATIC_URL }}base/css/bootstrap-multiselect.css" type="text/css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}admin/css/HoldOn.min.css" type="text/css">
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.css">
+
+
+    <style type="text/css">
+        .service_running {
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 10px !important;
+            background-color: greenyellow !important;
+        }
+
+        .service_dead {
+            width: 20px !important;
+            height: 20px !important;
+            border-radius: 10px !important;
+            background-color: red !important;
+        }
+    </style>
+    {% block links %}{% endblock %}
+
+</head>
+<body>
+<div class="page-wrapper">
+    {% if user_own %}
+        <header class="header-navbar" style="background-color: #32A1DB">
+            <div class="">
+                <div class="header-content clearfix">
+                    <div class="header-left clearfix pull-left">
+                        <h1 class="pull-left logo-tag">
+                            <a href="{% url 'index' %}">
+                                <img src="{{ STATIC_URL }}/account/images/logo/logo-large.png"
+                                     class="logo-large img-responsive">
+                                <img src="{{ STATIC_URL }}/account/images/logo/logo-small.png"
+                                     class="logo-small img-responsive">
+                            </a></h1>
+                        <ul class="nav nav-pills ul-head pull-left">
+                            {#                            {% if user_own.is_superuser or 4 in permission_user %}#}
+                            <li role="presentation" class="dropdown">
+                                <a class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#"
+                                   role="button"
+                                   aria-haspopup="true" aria-expanded="false"><i
+                                        class="fa fa-angle-down custom-down" aria-hidden="true"></i></a>
+
+                                {% if clusters %}
+                                    <ul class="dropdown-menu">
+                                        {% for cluster in clusters %}
+                                            <li>
+                                                <a href="{% url 'select_cluster' cluster.id %}">{{ cluster.name }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+
+                            </li>
+                            {% if cluster is not None %}
+                                <li class="li-clusters"><a>{{ cluster.name }}</a></li>
+                            {% else %}
+                                <li class="li-clusters"><a>Default</a></li>
+                            {% endif %}
+                            {#                            {% endif %}#}
+                        </ul>
+                    </div>
+                    <div class="header-right clearfix pull-right">
+                        <ul class="nav nav-pills">
+                            {% if user_own.is_superuser or 3 in permission_user %}
+                                {% if 'hdfs' in installed_services_names %}
+                                    <li class="li-browse"><a class="btn btn-info" href="{% url 'browse_hdfs' %}">Browse
+                                        Hdfs</a></li>
+                                {% endif %}
+                            {% endif %}
+                            <li role="presentation" class="dropdown header-user">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="" role="button"
+                                   aria-haspopup="true" aria-expanded="true"><span
+                                        class="span-name">{{ user_own.user_name|make_list|first|upper }}</span><i
+                                        class="fa fa-angle-down custom-down" aria-hidden="true"></i></a>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li class="li-user">
+                                        <p>{{ user_own.user_name }}</p>
+                                    </li>
+                                    <li role="separator"></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li><a href="{% url 'logout' %}">Log Out</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {% block header %}
+            {% endblock %}
+        </header>
+
+        <div class="nav-sidebar">
+            <div class="inner-navbar clearfix">
+                <ul class="ul-sidebar" id="accordion">
+
+                    {% if user_own.is_superuser or 3 in permission_user %}
+                        {% if installed_services_names %}
+                            {% for installed_services_name in installed_services_names %}
+                                <li><a href="/{{ installed_services_name }}/status"><i style="margin-top: -3px;">
+                                    <img src="{{ STATIC_URL }}/account/images/logo/icon-{{ installed_services_name }}.png"></i><span
+                                        class="span-link">{{ installed_services_name|upper }}</span></a></li>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if user_own.is_superuser %}
+                        <li><a href="{% url 'settings' %} "><i class="fa fa-cog" aria-hidden="true"></i><span
+                                class="span-link">Settings</span></a></li>
+                    {% endif %}
+                </ul>
+                <a class="toggle-button" role="button" title="Toggle sidebar"
+                   type="button"><span>Collapse Sidebar</span></a>
+            </div>
+        </div>
+
+        {% block nav_bar %}
+        {% endblock %}
+
+        <div class="page-contents clearfix" xmlns="http://www.w3.org/1999/html">
+        <div class="inner-content-fluid">
+        <div class="custom-container-fluid">
+        <div class="content-display clearfix">
+        <div class="panel">
+        <div class="panel-box">
+
+        {% if messages %}
+            <ul class="messages alert alert-dismissable fixed-msg">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {% for msg in messages %}
+                    {% if msg.level_tag == 'error' %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ msg.message | safe }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-{{ msg.level_tag }}" role="alert">
+                            {{ msg.message | safe }}
+                        </div>
+                    {% endif %}
+
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+
+        {% block content %}
+        {% endblock %}
+    {% else %}
+        <h2>you are not logged in....please login <a href="{% url 'login' %}">here</a></h2>
+
+    {% endif %}
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+</div>
+{#    ***--javascripts required for all are here--****#}
+<script src="{{ STATIC_URL }}account/vendor/jquery/jquery-3.2.1.min.js"></script>
+{#<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>#}
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="{{ STATIC_URL }}admin/js/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/locale/es-us.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment-with-locales.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<script src="//cdn.rawgit.com/Mikhus/canvas-gauges/gh-pages/download/2.1.5/radial/gauge.min.js"></script>
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@4.13.0/build/d3.min.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/npm/taucharts@2/dist/taucharts.min.js" type="text/javascript"></script>
+
+<script type="text/javascript" src="{{ STATIC_URL }}base/js/bootstrap-multiselect.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}admin/js/HoldOn.min.js"></script>
+<script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/sweetalert2@7.28.2/dist/sweetalert2.all.min.js"></script>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+ <link rel="stylesheet" href="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.css">
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}base/datatable/dataTables.bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.toggle-button').on('click', function () {
+            $('.page-wrapper').toggleClass('toggle-page');
+        });
+
+        $("#addNew").click(function () {
+            $("#addNewpanel").slideToggle("slow");
+        });
+
+        $("#editbtn").click(function () {
+            $("#editbtnpanel").slideToggle("slow");
+        });
+
+
+        $(".contentPost").delay(2000).fadeOut(500);
+
+
+        $('.dropdown-submenu a.a-drop').on("click", function (e) {
+            $(this).next('ul').toggle();
+            e.stopPropagation();
+            e.preventDefault();
+        });
+        $('[data-toggle="tooltip"]').tooltip();
+
+    });
+</script>
+
+{% block javascript %} {% endblock %}
+
+
+</body>
+</html>

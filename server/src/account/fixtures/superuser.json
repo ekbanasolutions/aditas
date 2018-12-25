@@ -1,0 +1,136 @@
+[
+  {
+    "model": "account.User",
+    "pk": 1,
+    "fields": {
+      "user_name": "kento",
+      "salt": "e03773a66359457987c44ac3b3a1726c",
+      "hashed_password": "a4db78ef910876a080563b754646e0f1",
+      "is_superuser": "True",
+      "is_active": "True"
+    }
+  },
+  {
+    "model": "administer.Service_table_ref",
+    "pk": 1,
+    "fields": {
+      "service_id": 1,
+      "table_name": "hdfs_hdfs",
+      "metrics_table": "hdfs_metrics"
+    }
+  },
+  {
+    "model" : "administer.Service_table_ref",
+    "pk": 2,
+    "fields": {
+      "service_id": 2,
+      "table_name": "yarn_yarn",
+      "metrics_table": "yarn_metrics"
+    }
+  },
+  {
+    "model":"administer.Service_table_ref",
+    "pk": 3,
+    "fields": {
+      "service_id": 3,
+      "table_name": "hbase_hbase",
+      "metrics_table": "hbase_metrics"
+    }
+  },
+  {
+    "model":"administer.Service_table_ref",
+    "pk": 4,
+    "fields": {
+      "service_id": 4,
+      "table_name": "spark_spark",
+      "metrics_table": "spark_metrics"
+    }
+  },
+  {
+    "model": "administer.Service_table_ref",
+    "pk": 5,
+    "fields": {
+      "service_id": 5,
+      "table_name": "elastic_search_elastic_search",
+      "metrics_table": "elastic_search_metrics"
+    }
+  },
+  {
+    "model": "administer.Clusters",
+    "pk": 1,
+    "fields": {
+      "name": "default"
+    }
+  },
+  {
+    "model": "administer.Services",
+    "pk": 1,
+    "fields": {
+      "name": "hdfs"
+    }
+  },
+  {
+    "model": "administer.Services",
+    "pk": 2,
+    "fields": {
+      "name": "yarn"
+    }
+  },
+  {
+    "model": "administer.Services",
+    "pk": 3,
+    "fields": {
+      "name": "hbase"
+    }
+  },
+  {
+    "model": "administer.Services",
+    "pk": 4,
+    "fields": {
+      "name": "spark"
+    }
+  },
+  {
+    "model": "administer.Services",
+    "pk": 5,
+    "fields": {
+      "name": "elasticsearch"
+    }
+  },
+  {
+    "model": "account.Permission",
+    "pk": 1,
+    "fields": {
+      "name": "manage user/group",
+      "content_type_id": 1,
+      "code_name": "manage_user_group"
+    }
+  },
+  {
+    "model": "account.Permission",
+    "pk": 2,
+    "fields": {
+      "name": "server monitoring",
+      "content_type_id": 2,
+      "code_name": "server_monitor"
+    }
+  },
+  {
+    "model": "account.Permission",
+    "pk": 3,
+    "fields": {
+      "name": "bigdata service",
+      "content_type_id": 3,
+      "code_name": "bigdata_service"
+    }
+  },
+  {
+    "model": "account.Permission",
+    "pk": 4,
+    "fields": {
+      "name": "move/copy/rename/delete",
+      "content_type_id": 4,
+      "code_name": "m_c_r_d"
+    }
+  }
+]

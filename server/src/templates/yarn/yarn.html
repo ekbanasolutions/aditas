@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+{% block title %}Yarn metrices {% endblock %}
+{% load static %}
+
+{% block content %}
+    <div class="page-header d-flex justify-content-between">
+        <h2>YARN</h2>
+        <div class="">
+            {% if client %}
+                <a class="btn btn-primary restart_all" data-id="{{ master_id }}" data-ip="{{ master_ip }}" href="#"
+                   role="button" id="restart-all-yarn">Restart all</a>
+            {% endif %}
+            {% if client and not error_in_conf_file %}
+                {% if all_dead %}
+                    <h3>All of the Node managers are shutdown</h3>
+                {% else %}
+
+                    <a class="btn btn-danger stop_all" href="#" data-id="{{ master_id }}" data-ip="{{ master_ip }}"
+                       role="button" id="stop-all-yarn">Stop all</a>
+                    </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <canvas id="parent_chart"></canvas>
+                                </div>
+                                <div class="col-md-6">
+                                    <canvas id="parent_chart_mem"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="page-header">
+                                <h3>Active Resourcemanager</h3>
+                            </div>
+
+                            <table class="table table-striped tbl-no-bdr">
+
+                                {% if active_node %}
+                                    {% if active_node.ip != '' %}
+                                        <tbody>
+                                        <tr>
+                                            <td>
+                                                {% if active_node.status == "RUNNING" %}
+                                                    <div class="service_running"></div>
+                                                {% else %}
+                                                    <div class="service_dead"></div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <p class="node_address"
+                                                   data-id="{{ active_node.id }}">{{ active_node.ip }}</p>
+                                            </td>
+                                            <td>
+                                                <p>  {{ active_node.hostname }} </p>
+                                            </td>
+                                            <td>
+                                                <p>  {{ active_node.fqdn }} </p>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'configuration_show_each_node' %}?node={{ active_node.ip }}&service_id={{ service_id }}">show
+                                                    configuration</a>
+                                            </td>
+                                            <td>
+                                                <div class="group-tag">
+
+                                                    <a class="btn btn-primary btn-sm y_rm_restart" href="#"
+                                                       role="button"
+                                                       id="editbtn">restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm y_rm_stop">Stop
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5"><p>You need to install client on this node to view it's
+                                                detail</p></td>
+                                        </tr>
+                                    {% endif %}
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="page-header">
+                                <h3>Standby Resourcemanager</h3>
+                            </div>
+
+                            <table class="table table-striped tbl-no-bdr">
+                                {% if standby_node.client_installed %}
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            {% if standby_node.status == "RUNNING" %}
+                                                <div class="service_running"></div>
+                                            {% else %}
+                                                <div class="service_dead"></div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <p class="node_address"
+                                               data-id="{{ standby_node.id }}">{{ standby_node.ip }}</p>
+                                        </td>
+                                        <td>
+                                            <p> {{ standby_node.hostname }}  </p>
+                                        </td>
+                                        <td>
+                                            <p>  {{ standby_node.fqdn }}  </p>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ standby_node.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                        <td>
+                                            <div class="group-tag">
+
+                                                <a class="btn btn-primary btn-sm y_rm_restart" href="#"
+                                                   role="button"
+                                                   id="editbtn">restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm y_rm_stop">Stop
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5"><p>You need to install client on this node to view it's
+                                            detail</p>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="page-header">
+                                <h3>Alive Nodemanagers</h3>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-striped tbl-no-bdr">
+                                    <tbody>
+                                    {% if alive_nodemanagers %}
+                                        {% for nodemanager in alive_nodemanagers %}
+                                            <tr>
+                                                <td>
+                                                    <p class="node_address"
+                                                       data-id="{{ nodemanager.node_id }}">{{ nodemanager.ip }}</p>
+                                                </td>
+                                                <td>
+                                                    <p>{{ nodemanager.name }}</p>
+                                                </td>
+                                                <td>
+                                                    <p>{{ nodemanager.fqdn }}</p>
+                                                </td>
+                                                <td>
+                                                    <p>{{ nodemanager.last_health_update }}</p>
+                                                </td>
+                                                <td>
+                                                    <p>{{ nodemanager.rack }}</p>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'configuration_show_each_node' %}?node={{ nodemanager.ip }}&service_id={{ service_id }}">show
+                                                        configuration</a>
+                                                </td>
+                                                <td>
+                                                    <div class="group-tag">
+                                                        {% if nodemanager.client_installed %}
+                                                            <a class="btn btn-primary btn-sm y_nm_restart" href="#"
+                                                               role="button" id="restart_node">Restart</a>
+                                                            <button type="submit"
+                                                                    class="btn btn-danger btn-sm y_nm_stop">
+                                                                Stop
+                                                            </button>
+                                                        {% else %}
+                                                            {% with title="'please make sure you installed the client on this node'" %}
+                                                                <a class="btn btn-primary btn-sm " href="#"
+                                                                   role="button"
+                                                                   id="restart_node" disabled
+                                                                   data-toggle="tooltip" data-placement="top"
+                                                                   title={{ title }}>Restart</a>
+
+                                                                <a type="submit" class="btn btn-danger btn-sm" disabled
+                                                                   data-toggle="tooltip"
+                                                                   data-placement="top" title={{ title }}>Stop
+                                                                </a>
+                                                            {% endwith %}
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5"><p>No alive node managers</p></td>
+                                        </tr>
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="page-header">
+                                <h3>Dead Nodemanagers</h3>
+                            </div>
+
+                            <table class="table table-striped tbl-no-bdr">
+                                <tbody>
+                                {% if dead_nodemanagers %}
+                                    {% for nodemanager in dead_nodemanagers %}
+                                        <tr>
+                                            <td>
+                                                <p class="node_address"
+                                                   data-id="{{ nodemanager.node_id }}">{{ nodemanager.ip }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ nodemanager.name }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ nodemanager.fqdn }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ nodemanager.last_health_update }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ nodemanager.rack }}</p>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'configuration_show_each_node' %}?node={{ nodemanager.ip }}&service_id={{ service_id }}">show
+                                                    configuration</a>
+                                            </td>
+                                            <td>
+                                                <div class="group-tag">
+                                                    {% if nodemanager.client_installed %}
+                                                        <a class="btn btn-primary btn-sm y_nm_restart" href="#"
+                                                           role="button" id="restart_node">Restart</a>
+                                                        <button type="submit" class="btn btn-danger btn-sm y_nm_stop">
+                                                            Stop
+                                                        </button>
+                                                    {% else %}
+                                                        {% with title="'please make sure you installed the client on this node'" %}
+                                                            <a class="btn btn-primary btn-sm " href="#" role="button"
+                                                               id="restart_node" disabled
+                                                               data-toggle="tooltip" data-placement="top"
+                                                               title={{ title }}>Restart</a>
+
+                                                            <a type="submit" class="btn btn-danger btn-sm" disabled
+                                                               data-toggle="tooltip"
+                                                               data-placement="top" title={{ title }}>Stop
+                                                            </a>
+                                                        {% endwith %}
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5"><p>No dead node managers</p></td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script src="{{ STATIC_URL }}admin/js/boot_services.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+
+            var cpu_capacity = [];
+            var cpu_used = [];
+            var mem_capacity = [];
+            var mem_used = [];
+            var ip = [];
+
+            {% for node in alive_nodemanagers %}
+                cpu_capacity.push({{ node.cpu_capacity }});
+                cpu_used.push({{ node.cpu_used }});
+                mem_capacity.push({{ node.mem_capacity }});
+                mem_used.push({{ node.mem_used }});
+
+                ip.push("{{ node.ip }}");
+            {% endfor %}
+
+            var cpu = [
+                {
+                    label: 'Total',
+                    data: cpu_capacity,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Used',
+                    data: cpu_used,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var memory = [
+                {
+                    label: 'Total',
+                    data: mem_capacity,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Used',
+                    data: mem_used,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var cpuData = {
+                labels: ip,
+                datasets: cpu
+            };
+
+            var memData = {
+                labels: ip,
+                datasets: memory
+            };
+
+            var chartOptions_cpu = {
+                title: {
+                    display: true,
+                    text: "CPU cores used by Nodemanagers"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            var chartOptions_memory = {
+                title: {
+                    display: true,
+                    text: "Memory used by Nodemanagers"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            new Chart($('#parent_chart'), {
+                type: 'bar',
+                data: cpuData,
+                options: chartOptions_cpu
+            });
+
+            new Chart($('#parent_chart_mem'), {
+                type: 'bar',
+                data: memData,
+                options: chartOptions_memory
+            });
+
+            var restart_status = '{{ restart_status }}';
+            if (restart_status === '1') {
+                $("#restart-all-yarn").attr('class', 'btn btn-danger btn-sm restart_all');
+                $("#restart-all-yarn").attr('data-ip', '{{ master_ip }}');
+            }
+
+            $(".y_nm_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting node manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_nm_restart" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "nm"
+                };
+
+                service_operation(data)
+            });
+
+            $(".y_nm_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before stopping node manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_nm_stop" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "nm"
+                };
+
+                service_operation(data);
+            });
+
+            $(".y_rm_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting resource manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_rm_restart" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "rm"
+                };
+
+                service_operation(data);
+            });
+
+            $(".y_rm_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before stopping resource manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_rm_stop" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "rm"
+                };
+
+                service_operation(data);
+            });
+
+            $(".restart_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before restarting yarn, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 1,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_all_restart" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "rm"
+                };
+
+                service_operation(data);
+            });
+
+            $(".stop_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before stopping yarn, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "action_type": 0,
+                    "node_id": node_id,
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "y_all_stop" %}',
+                    "msg": msg,
+                    "service_name": "yarn",
+                    "server_type": "rm"
+                };
+
+                service_operation(data);
+            });
+
+        });
+    </script>
+{% endblock %}

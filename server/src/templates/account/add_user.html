@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Add Users {% endblock %}
+{% load static %}
+
+{% block links %}
+    <!-- <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css"> -->
+{% endblock %}
+
+{% block content %}
+    {% if user_own.is_superuser  %}
+                                <div class="panlel panel-default">
+                                  <div class="panel-body">
+                                    <div class="page-header">
+                                        <p>First, enter a username and password. Then, you'll be able to edit more user
+                                            options.</p>
+                                            {% if error_msg %}
+                                        <p class="alert alert-danger">{{ error_msg }}</p>
+                                        {% elif success_msg %}
+                                        <p class="alert alert-danger">{{ success_msg }}</p>
+                                        {% endif %}
+                                    </div>
+                                        <form enctype="multipart/form-data" action="{% url 'add_user' %}" method="post" id="user_form" class="form-horizontal" style="max-width: 700px;">
+                                    {% csrf_token %}
+
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label" for="id_username">Username:</label>
+                                        <div class="col-sm-7">
+                                          <input name="username" maxlength="150" id="id_username" autofocus="" type="text" value="{{ username }}" class="form-control" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label" for="id_password1">Password:</label>
+                                        <div class="col-sm-7">
+                                            <input name="password1" id="id_password1" type="password" minlength="8" value="{{ password1 }}" class="form-control" required>
+                                            <div class="help">
+                                                <ul>
+                                                    <li>Your password must contain at least 8 characters.</li>
+                                                    <li>Your password can't be entirely numeric.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label" for="id_password2">Password confirmation:</label>
+                                        <div class="col-sm-7">
+                                            <input name="password2" id="id_password2" type="password" class="form-control" required>
+                                            <span id='confirm_message'></span>
+                                            <div class="help">Enter the same password as before, for verification.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-sm-offset-4 col-sm-8">
+                                          <div class="btn-groups">
+                                            <input value="Save and add another" name="addanother" class="btn btn-primary" type="submit">
+                                            <input value="Save and continue editing" name="continue" class="btn btn-primary" type="submit">
+                                          </div>
+                                        </div>
+                                    </div>
+
+
+                                </form>
+                                    </div>
+                                </div>
+{% endif %}
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript">
+    $('#id_password1, #id_password2').on('keyup', function () {
+        if ($('#id_password1').val().length >= 8){
+        if ($('#id_password1').val() == $('#id_password2').val()) {
+            $('#confirm_message').html('Matching').css('color', 'green');
+    }
+        else{
+            $('#confirm_message').html('Not Matching').css('color', 'red');
+            }
+    }});
+    </script>
+
+{% endblock %}

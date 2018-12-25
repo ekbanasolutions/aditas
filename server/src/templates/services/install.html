@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Install services {% endblock %}
+{% load static %}
+
+{% block content %}
+
+    <div class="">
+        <div class="page-header"><h2>Install Services</h2></div>
+    </div>
+
+    <div class="">
+        <div class="panel panel-default custom-panel services-text">
+            <div class="panel-heading">HDFS</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    <p>The Hadoop Distributed File System (HDFS) is a distributed file system designed to run on commodity hardware.
+                        It has many similarities with existing distributed file systems.
+                        However, the differences from other distributed file systems are significant.
+                    </p>
+                    <a href="https://hadoop.apache.org/docs/r1.2.1/hdfs_design.html" target="_blank">visit website</a>
+                </div>
+                <div class="col-md-2">
+                    {% if uninstalled_services and 'hdfs' in uninstalled_services %}
+                        <a class="btn btn-default" href="/hdfs/add" data-action_id="1">install</a>
+                    {% else %}
+                        <a class="btn btn-default" href="/hdfs/remove" data-action_id="0" >uninstall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <div class="panel panel-default custom-panel services-text">
+            <div class="panel-heading">YARN</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    <p>Yarn or "Yet Another Resource Negotiator" is the resource manager for Hadoop. The fundamental idea of YARN is to split up the functionalities of resource management and job scheduling/monitoring into separate daemons.
+                        The idea is to have a global ResourceManager (RM) and per-application ApplicationMaster (AM).
+                        An application is either a single job or a DAG of jobs.</p>
+                    <a href="https://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html" target="_blank">visit website</a>
+                </div>
+                <div class="col-md-2">
+                    {% if uninstalled_services and 'yarn' in uninstalled_services %}
+                        <a class="btn btn-default" href="/yarn/add" data-action_id="1" >install</a>
+                    {% else %}
+                        <a class="btn btn-default" href="/yarn/remove" data-action_id="0" >uninstall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <div class="panel panel-default custom-panel services-text">
+            <div class="panel-heading">HBASE</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    <p>HBase is a column-oriented database management system that runs on top of Hadoop Distributed File System (HDFS).
+                        It is well suited for sparse data sets, which are common in many big data use cases. </p>
+                    <a href="https://hbase.apache.org/" target="_blank">visit website</a>
+                </div>
+                <div class="col-md-2">
+                    {% if uninstalled_services and 'hbase' in uninstalled_services %}
+                        <a  class="btn btn-default" href="/hbase/add" data-action_id="1">install</a>
+                    {% else %}
+                        <a class="btn btn-default" href="/hbase/remove" data-action_id="0">uninstall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <div class="panel panel-default custom-panel services-text">
+            <div class="panel-heading">SPARK</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    <p>Apache Spark is a fast and general-purpose cluster computing system.
+                        It provides high-level APIs in Java, Scala, Python and R, and an optimized engine that supports general execution graphs.
+                        It also supports a rich set of higher-level tools including Spark SQL for SQL and structured data processing,
+                        MLlib for machine learning, GraphX for graph processing, and Spark Streaming.</p>
+                    <a href="http://spark.apache.org/" target="_blank">visit website</a>
+                </div>
+                <div class="col-md-2">
+                    {% if uninstalled_services and 'spark' in uninstalled_services %}
+                        <a class="btn btn-default" href="/spark/add" data-action_id="1">install</a>
+                    {% else %}
+                        <a class="btn btn-default" href="/spark/remove" data-action_id="0">uninstall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="">
+        <div class="panel panel-default custom-panel services-text">
+            <div class="panel-heading">ELASTICSEARCH</div>
+            <div class="panel-body">
+                <div class="col-md-10">
+                    <p>Elasticsearch is a search engine based on Lucene. It provides a distributed, multitenant-capable
+                        full-text search engine with an HTTP web interface and schema-free JSON documents.
+                        Elasticsearch is developed in Java and is released as open source under the terms of the Apache License</p>
+                    <a href="https://www.elastic.co/" target="_blank">visit website</a>
+                </div>
+                <div class="col-md-2">
+                    {% if uninstalled_services and 'elasticsearch' in uninstalled_services %}
+                        <a class="btn btn-default" href="/elasticsearch/add" data-action_id="1" >install</a>
+                    {% else %}
+                        <a class="btn btn-default" href="/elasticsearch/remove" data-action_id="0">uninstall</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $('a').on("click",function (e) {
+            if($(this).attr("data-action_id") === "0") {
+                e.preventDefault();
+                swal({
+                    text: "You are about to uninstall hdfs. Are you sure about that?",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'continue',
+                    showLoaderOnConfirm: true,
+                    preConfirm: () => {}
+            }).
+                then((result) => {
+                    if(result.value)
+                {
+                    window.location = $(this).attr("href");
+                }
+            })
+            }
+            });
+
+    </script>
+{% endblock %}

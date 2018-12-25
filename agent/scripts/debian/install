@@ -1,0 +1,4 @@
+../src/* /usr/share/aditas/agent
+shell/*.sh /etc/aditas/agent/scripts/shell
+shell/*.sql /etc/aditas/agent/scripts/sql
+

@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+{% block title %}Elasticsearch metrics {% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between">
+        <h2>ELASTICSEARCH</h2>
+        <div class="">        {% if client %}
+            <a class="btn btn-primary es_restart_all" data-ip="{{ master_ip }}" href="#" role="button"
+               id="restart-all-spark">Restart all</a>
+        {% endif %}
+        {% if client and not error_in_conf_file %}
+            <a class="btn btn-danger es_stop_all" href="#" role="button" id="stop-all-spark">Stop all</a>
+            </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="parent_chart_data_memory"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="parent_chart_data_swap"></canvas>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Active Master</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {% if master.status == "RUNNING" %}
+                                        <div class="service_running"></div>
+                                    {% else %}
+                                        <div class="service_dead"></div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="name-title clearfix">
+                                        <p>{{ master.name }}</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="name-title clearfix">
+                                        <p>{{ master.hostname }}</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="name-title clearfix">
+                                        <p>{{ master.fqdn }}</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'configuration_show_each_node' %}?node={{ master.ip }}&service_id={{ service_id }}">show
+                                        configuration</a>
+                                </td>
+                                <td>
+                                    <div class="form-group">
+                                        <p class="node_address">{{ master.ip }}</p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="group-tag">
+                                        <a class="btn btn-primary btn-sm es_restart" href="#" role="button"
+                                           id="restart_node">Restart</a>
+                                        <button type="submit" class="btn btn-danger btn-sm es_stop">Stop</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Backup Master</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for master in  backup_masters %}
+                                <tr>
+                                    <td>
+                                        {% if master.status == "RUNNING" %}
+                                            <div class="service_running"></div>
+                                        {% else %}
+                                            <div class="service_dead"></div>
+                                        {% endif %}
+                                    </td>
+                                <td>
+                                        <div class="form-group">
+                                            <p class="node_address">{{ master.ip }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p>{{ master.name }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p>{{ master.hostname }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p>{{ master.fqdn }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ master.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+
+
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if master.client_installed %}
+                                                <a class="btn btn-primary btn-sm es_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm es_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm" disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Alive Datanode</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for data in  alive_datanode %}
+
+                                <tr>
+                                    <td>
+                                        <div class="form-group">
+                                            <p class="node_address">{{ data.ip }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p>{{ data.name }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ data.hostname }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ data.fqdn }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'configuration_show_each_node' %}?node={{ data.ip }}&service_id={{ service_id }}">show
+                                            configuration</a>
+                                    </td>
+
+
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if data.client_installed %}
+                                                <a class="btn btn-primary btn-sm es_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm es_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm" disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div><!-- ends group-tag -->
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Dead Datanode</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for data in  dead_datanode %}
+                                <tr>
+                                    <td>
+                                        <div class="name-title clearfix">
+                                            <p>{{ data.name }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ data.hostname }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p>{{ data.fqdn }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group">
+                                            <p class="node_address">{{ data.ip }}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if data.client_installed %}
+                                                <a class="btn btn-primary btn-sm es_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm es_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-primary btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm" disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div><!-- ends group-tag -->
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script src="{{ STATIC_URL }}admin/js/boot_services.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+
+            var total_memory = [];
+            var free_memory = [];
+            var used_memory = [];
+            var total_swap_memory = [];
+            var free_swap_memory = [];
+            var used_swap_memory = [];
+
+            var ip = [];
+
+            {% for node in alive_datanode %}
+                total_memory.push({{ node.total_memory }});
+                free_memory.push({{ node.free_memory }});
+                used_memory.push({{ node.used_memory }});
+
+                total_swap_memory.push({{ node.total_swap_memory }});
+                free_swap_memory.push({{ node.free_swap_memory }});
+                used_swap_memory.push({{ node.used_swap_memory }});
+
+                ip.push("{{ node.ip }}");
+            {% endfor %}
+
+            var memory = [
+                {
+                    label: 'Total Memory',
+                    data: total_memory,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                }, {
+                    label: 'Used Memory',
+                    data: used_memory,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var swap_memory = [
+                {
+                    label: 'Total Swap Memory',
+                    data: total_swap_memory,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                }, {
+                    label: 'Used Swap Memory',
+                    data: used_swap_memory,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+
+            var memoryData = {
+                labels: ip,
+                datasets: memory
+            };
+
+            var swapMemoryData = {
+                labels: ip,
+                datasets: swap_memory
+            };
+
+            var chartOptions = {
+                title: {
+                    display: true,
+                    text: "Memory used by Datanodes"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            var chartOptions_swap = {
+                title: {
+                    display: true,
+                    text: "Swap Memory used by Datanodes"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            new Chart($('#parent_chart_data_memory'), {
+                type: 'bar',
+                data: memoryData,
+                options: chartOptions
+            });
+
+            new Chart($('#parent_chart_data_swap'), {
+                type: 'bar',
+                data: swapMemoryData,
+                options: chartOptions_swap
+            });
+
+            $(".es_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "You are about to restart elasticsearch service on this node.";
+                var data = {
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "es_restart" %}',
+                    "msg": msg
+                };
+                service_operation(data);
+            });
+
+            $(".es_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "You are about to stop elasticsearch service on this node.";
+                var data = {"node_ip": node_ip, "csrf": '{{ csrf_token }}', "url": '{% url "es_stop" %}', "msg": msg};
+                service_operation(data);
+            });
+
+            $(".es_restart_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var msg = "You are about to restart elasticsearch cluster.";
+                var data = {
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "es_all_restart" %}',
+                    "msg": msg
+                };
+                service_operation(data);
+            });
+
+            $(".es_stop_all").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var msg = "You are about to stop elasticsearch cluster.";
+                var data = {
+                    "node_ip": node_ip,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "es_all_stop" %}',
+                    "msg": msg
+                };
+                service_operation(data);
+            });
+
+        })
+        ;
+    </script>
+{% endblock %}

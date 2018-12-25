@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% if not not_a_single_client %}
+    <br>
+        {% if nodes %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+    <div class="table-responsive">
+    <table id="unapproved_nodes_table" class="table table-striped tbl-no-bdr">
+        <tbody>
+            {% for node in nodes %}
+                <tr>
+                    <td class="hidden"><p class="node_address">{{ node.id }}</p></td>
+                    <td >{{ node.ip }}
+                    </td>
+                    <td >{{ node.name }}</td>
+                    <td>{{ node.hostname }}</td>
+                    <td>{{ node.fqdn }}</td>
+                        <td><a data-toggle-to="1" data-toggle="tooltip" title="approve" style="cursor:pointer;" class="nodes_approval_status btn btn-primary">
+                            <i class="fa fa-check"></i>
+                        </a>
+                        </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    </div>
+        {% else %}
+
+        {% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.nodes_approval_status').on("click",function(){
+                var toggle_to= parseInt($(this).data('toggle-to'));
+                var id_this=$(this);
+                var id = id_this.closest('tr').find('p.node_address').text();
+                HoldOn.open();
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}','status':toggle_to ,'id':id },
+                    url : '{% url 'toggle_approval'%}',
+                    success : function(data) {
+                        if (data.result === 1){
+                            id_this.closest('tr').remove();
+                            var rowCount = $('#unapproved_nodes_table tr').length;
+                            if(rowCount <=0){
+                                window.location.reload(true)
+                            }
+                        }
+                        HoldOn.close();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

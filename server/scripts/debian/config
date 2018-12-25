@@ -1,0 +1,31 @@
+#!/bin/bash -e
+
+CONFIGFILE="/var/lib/aditas/server/default/config/vars/db_params.conf"
+. /usr/share/debconf/confmodule
+
+if [[ -e "$CONFIGFILE" ]]; then
+. $CONFIGFILE || true
+
+db_set aditas/db_name "$db_name"
+db_set aditas/c_user "$c_user"
+db_set aditas/c_pass "$c_pass"
+fi
+
+db_input critical aditas/db_host || true
+db_input critical aditas/db_port || true
+db_input critical aditas/db_superuser || true
+db_input critical aditas/db_pass || true
+db_input critical aditas/final_show || true
+
+db_go || true
+
+db_fset aditas/db_host seen false
+db_fset aditas/db_port seen false
+db_fset aditas/db_superuser seen false
+db_fset aditas/db_pass seen false
+db_fset aditas/final_show seen false
+db_fset aditas/db_name seen false
+db_fset aditas/c_user seen false
+db_fset aditas/c_pass seen false
+
+db_stop

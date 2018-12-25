@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block title %}Hbase metrics {% endblock %}
+{% load static %}
+
+
+{% block content %}
+    <div class="page-header d-flex justify-content-between">
+        <h2>HBASE</h2>
+        <div class="">
+        {% if client %}
+            <a class="btn btn-primary restart_all" href="#" data-id="{{ master_id }}" data-ip="{{ master_ip }}"
+               role="button" id="restart-all-hbase">Restart all</a>
+        {% endif %}
+        {% if client and not error_in_conf_file %}
+            <a class="btn btn-danger stop_all" href="#" data-id="{{ master_id }}" data-ip="{{ master_ip }}"
+               role="button" id="stop-all-hbase">Stop all</a>
+            </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <canvas id="parent_chart" style="width:100%" height="400"></canvas>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Active Master</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {% if active_master.status == "RUNNING" %}
+                                        <div class="service_running"></div>
+                                    {% else %}
+                                        <div class="service_dead"></div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p class="name-title node_address"
+                                       data-id="{{ active_master.id }}">{{ active_master.ip }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ active_master.name }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ active_master.hostname }}</p>
+                                </td>
+                                <td>
+                                    <p>{{ active_master.fqdn }}</p>
+                                </td>
+                            <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ active_master.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                <td>
+                                    <div class="group-tag">
+                                        <a class="btn btn-default btn-sm h_hm_restart" href="#" role="button"
+                                           id="editbtn">restart</a>
+                                        <button type="submit" class="btn btn-danger btn-sm h_hm_stop">Stop</button>
+                                    </div><!-- ends group-tag -->
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Backup Master</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            {% if backup_master.client_installed %}
+                                <tbody>
+                                <tr>
+                                    <td>
+                                        {% if backup_master.status == "RUNNING" %}
+                                            <div class="service_running"></div>
+                                        {% else %}
+                                            <div class="service_dead"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <p class="name-title node_address"
+                                           data-id="{{ backup_master.id }}">{{ backup_master.ip }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ backup_master.name }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ backup_master.hostname }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ backup_master.fqdn }}</p>
+                                    </td>
+                                <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ backup_master.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                    <td>
+                                        <div class="group-tag">
+                                            <a class="btn btn-default btn-sm h_hm_restart" href="#" role="button"
+                                               id="editbtn">restart</a>
+                                            <button type="submit" class="btn btn-danger btn-sm h_hm_stop">Stop</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5"><p>You need to install client on this node to view it's detail</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Live RegionServer</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            <tbody>
+                            {% for node in live_regionservers %}
+
+                                <tr>
+                                    <td>
+                                        <p class="node_address" data-id="{{ node.node_id }}">{{ node.ip }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ node.name }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ node.hostname }}</p>
+                                    </td>
+                                    <td>
+                                        <p>{{ node.fqdn }}</p>
+                                    </td>
+                                <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ node.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                    <td>
+                                        <div class="group-tag">
+                                            {% if node.client_installed %}
+                                                <a class="btn btn-default btn-sm h_rs_restart" href="#" role="button"
+                                                   id="restart_node">Restart</a>
+                                                <button type="submit" class="btn btn-danger btn-sm h_rs_stop">Stop
+                                                </button>
+                                            {% else %}
+                                                {% with title="'please make sure you installed the client on this node'" %}
+                                                    <a class="btn btn-default btn-sm" href="#" role="button"
+                                                       id="restart_node" disabled
+                                                       data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm " disabled
+                                                            data-toggle="tooltip"
+                                                            data-placement="top" title={{ title }}>Stop
+                                                    </button>
+                                                {% endwith %}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="page-header">
+                        <h3>Dead RegionServer</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped tbl-no-bdr">
+                            {% if dead_regionservers %}
+                                <tbody>
+                                {% for dead_regionserver in  dead_regionservers %}
+                                    <tr>
+                                        <td>
+                                            <div class="name-title clearfix">
+                                                <p class="node_address"
+                                                   data-id="{{ dead_regionserver.node_id }}">{{ dead_regionserver.ip }}</p>
+                                            </div>
+                                        </td>
+                                    <td>
+                                            <a href="{% url 'configuration_show_each_node' %}?node={{ dead_regionserver.ip }}&service_id={{ service_id }}">show
+                                                configuration</a>
+                                        </td>
+                                        <td>
+                                            <div class="group-tag">
+                                                {% if dead_regionserver.client_installed %}
+                                                    <a class="btn btn-default btn-sm h_rs_restart" href="#"
+                                                       role="button" id="restart_node">Restart</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm h_rs_stop">Stop
+                                                    </button>
+                                                {% else %}
+                                                    {% with title="'please make sure you installed the client on this node'" %}
+                                                        <a class="btn btn-default btn-sm" href="#" role="button"
+                                                           id="restart_node" disabled
+                                                           data-toggle="tooltip" data-placement="top" title={{ title }}>Restart</a>
+                                                        <button type="submit" class="btn btn-danger btn-sm" disabled
+                                                                data-toggle="tooltip"
+                                                                data-placement="top" title={{ title }}>Stop
+                                                        </button>
+                                                    {% endwith %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            {% else %}
+                                <p>No DeadNodes</p>
+                            {% endif %}
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+{% endblock %}
+{% block javascript %}
+    <script src="{{ STATIC_URL }}admin/js/boot_services.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+            var max_heap = [];
+            var used_heap = [];
+            var ip = [];
+            {% for node in live_regionservers %}
+                max_heap.push({{ node.max_heap }});
+                used_heap.push({{ node.used_heap }});
+                ip.push("{{ node.ip }}");
+            {% endfor %}
+            var heap = [
+                {
+                    label: 'Total',
+                    data: max_heap,
+                    backgroundColor: 'rgba(0, 99, 132, 0.6)',
+                    borderColor: 'rgba(0, 99, 132, 1)',
+                    yAxisID: "a"
+                },
+                {
+                    label: 'Used',
+                    data: used_heap,
+                    backgroundColor: 'rgba(99, 132, 0, 0.6)',
+                    borderColor: 'rgba(99, 132, 0, 1)',
+                    yAxisID: "a"
+                }
+            ];
+
+            var heapData = {
+                labels: ip,
+                datasets: heap
+            };
+
+            var chartOptions = {
+                title: {
+                    display: true,
+                    text: "Memory used by Regionservers"
+                },
+                tooltips: {
+                    mode: 'label'
+                },
+                responsive: true,
+                scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
+                    yAxes: [{
+                        stacked: true,
+                        id: "a",
+                    }]
+                }
+            };
+
+            new Chart($('#parent_chart'), {
+                type: 'bar',
+                data: heapData,
+                options: chartOptions
+            });
+
+
+            var restart_status = '{{ restart_status }}';
+            if (restart_status === '1') {
+                $("#restart-all-hbase").attr('class', 'btn btn-danger btn-sm');
+            }
+
+
+            $(".h_rs_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting node manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_rs_restart" %}',
+                    "msg": msg,
+                    "action_type": 1,
+                    "service_name": "hbase",
+                    "server_type": "HRegionServer"
+                };
+                service_operation(data)
+            });
+
+            $(".h_rs_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before stopping node manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_rs_stop" %}',
+                    "msg": msg,
+                    "action_type": 0,
+                    "service_name": "hbase",
+                    "server_type": "HRegionServer"
+                };
+                service_operation(data)
+            });
+
+            $(".h_hm_restart").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before restarting resource manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_hm_restart" %}',
+                    "msg": msg,
+                    "action_type": 1,
+                    "service_name": "hbase",
+                    "server_type": "HMaster"
+                };
+                service_operation(data)
+            });
+
+            $(".h_hm_stop").click(function () {
+                var node_ip = $(this).closest('tr').find('.node_address').text();
+                var node_id = $(this).closest('tr').find('.node_address').attr("data-id");
+                var msg = "Before stopping resource manager, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "h_hm_stop" %}',
+                    "msg": msg,
+                    "action_type": 0,
+                    "service_name": "hbase",
+                    "server_type": "HMaster"
+                };
+                service_operation(data)
+            });
+
+            $(".restart_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before restarting yarn, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "hb_all_restart" %}',
+                    "msg": msg,
+                    "action_type": 1,
+                    "service_name": "hbase",
+                    "server_type": "HMaster"
+                };
+                service_operation(data)
+            });
+
+            $(".stop_all").click(function () {
+                var node_ip = $(this).attr("data-ip");
+                var node_id = $(this).attr("data-id");
+                var msg = "Before stopping yarn, make sure other systems dependent on yarn are gracefully stopped";
+                var data = {
+                    "node_ip": node_ip,
+                    "node_id": node_id,
+                    "csrf": '{{ csrf_token }}',
+                    "url": '{% url "hb_all_stop" %}',
+                    "msg": msg,
+                    "action_type": 0,
+                    "service_name": "hbase",
+                    "server_type": "HMaster"
+                };
+                service_operation(data)
+            });
+        })
+        ;
+    </script>
+{% endblock %}

@@ -1,0 +1,52 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+
+
+export ADITAS_LOAD_PATH="/etc/aditas/server/scripts/shell/load_paths.sh"
+if [ -f "${ADITAS_LOAD_PATH}" ]; then
+. "${ADITAS_LOAD_PATH}"
+fi
+. /usr/share/debconf/confmodule
+
+if [ -f "${ADITAS_DBCONF_VALUES}" ]; then
+. "${ADITAS_DBCONF_VALUES}"
+fi
+
+if [[ -n $option ]] && [[ $option == "change" ]]; then
+db_input critical aditas/db_name || true
+db_input critical aditas/c_user || true
+db_input critical aditas/c_pass || true
+db_go
+
+db_get aditas/db_name
+export db_name="$RET"
+
+db_get aditas/c_user
+export c_user="$RET"
+
+db_get aditas/c_pass
+export c_pass="$RET"
+
+db_stop
+fi
+
+if [ -f "${ADITAS_INSTALLER_SCRIPT}" ];then
+
+. "${ADITAS_INSTALLER_SCRIPT}" "install"
+
+fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

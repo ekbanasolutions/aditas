@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <h3>Clusters</h3>
+                <button type="button" id="add_cluster_btn" data-toggle="modal" data-target="#myModal"
+                        class="btn btn-primary">Add Cluster
+                </button>
+            </div>
+            <div class="table-responsive">
+
+                <table class="table table-striped table-bordered tbl-bdr-x-0 mb-0">
+
+                    <thead>
+                    <tr>
+                        <th>Cluster Name</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for cluster in clusters %}
+                        <tr>
+                        {% if cluster.id == 1 %}
+                            <td data-id="{{ cluster.id }}">{{ cluster.name }} <small>( protected )</small></td>
+                            {% else %}
+                            <td data-id="{{ cluster.id }}">{{ cluster.name }}</td>
+                            {% endif %}
+                            <td>
+                                <button type="submit" onclick="deleteCluster({{ cluster.id }})"
+                                        class="btn btn-danger btn-sm">Delete
+                                </button>
+                                <button type="submit" data-toggle="modal" data-id="{{ cluster.id }}"
+                                        data-name="{{ cluster.name }}" data-target="#edit_cluster_model"
+                                        class="btn btn-info btn-sm edit_cluster">Edit
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade custom-modal" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Add Cluster</h4>
+                </div>
+                <div class="modal-body clearfix">
+                    <div class="form-group">
+                        <label class="col-md-5 control-label" for="id_username">Cluster Name:</label>
+                        <div class="col-md-7">
+                            <input type="text" id="add_cluster_model_input" name="cluster"
+                                   data-url="{% url 'add_cluster' %}" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button class="btn btn-primary" type="submit" name="submit" id="addcluster">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="edit_cluster_model" role="dialog">
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="edit_cluster" data-url="{% url 'edit_cluster' %}" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="editcluster" name="submit">Update</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        $('.edit_cluster').on('click', function () {
+            $('input[name=edit_cluster]').attr('data-id', $(this).attr('data-id'));
+            $('input[name=edit_cluster]').val($(this).attr('data-name'));
+        });
+
+        $('#add_cluster_btn').on('click', function () {
+            $('#add_cluster_model_input').val('');
+        });
+
+        $('#addcluster').click(function (e) {
+            e.preventDefault();
+            var input_obj = $(':input[name=cluster]');
+            var data = {
+                "cluster": input_obj.val(),
+                "csrfmiddlewaretoken": '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                dataType: 'json',
+                url: input_obj.attr("data-url"),
+                data: data,
+                type: 'POST',
+                success: function (result) {
+                    if (result.success === 1) {
+                        window.location.reload();
+                    } else {
+                        swal({
+                            html: result.msg
+                        });
+                    }
+                }
+            });
+        });
+
+        $('#editcluster').click(function (e) {
+            e.preventDefault();
+            var input_obj = $(':input[name=edit_cluster]');
+            var data = {
+                "cluster": input_obj.val(),
+                "cluster_id": input_obj.attr('data-id'),
+                "csrfmiddlewaretoken": '{{ csrf_token }}'
+            };
+            console.log(input_obj.attr("data-id"));
+            $.ajax({
+                dataType: 'json',
+                url: input_obj.attr("data-url"),
+                data: data,
+                type: 'POST',
+                success: function (result) {
+                    if (result.success === 1) {
+                        window.location.reload();
+                    } else {
+                        swal({
+                            html: result.msg
+                        });
+                    }
+                }
+            });
+        });
+
+        function deleteCluster(id) {
+            var data = {
+                "cluster": id,
+                "csrfmiddlewaretoken": '{{ csrf_token }}'
+            };
+            Swal({
+                title: 'Are you sure?',
+                text: "You want to delete this cluster",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'continue'
+            }).then((result) => {
+                if (result.value) {
+                    $.ajax({
+                        dataType: 'json',
+                        url: "{% url 'delete_cluster' %}",
+                        data: data,
+                        type: 'POST',
+                        success: function (result) {
+                            if (result.success === 1) {
+                                window.location.reload();
+                            } else {
+                                swal({
+                                    html: result.msg
+                                });
+                            }
+                        }
+                    });
+                }
+            })
+
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block title %}All Nodes {% endblock %}
+{% load static %}
+
+{% block content %}
+    {% if not not_a_single_client %}
+    <br>
+    <div class="panel panel-default">
+        <div class="panel-body">
+    <div class="table-responsive">
+    <table class="table table-striped tbl-no-bdr">
+        <thead>
+        <tr>
+            <th><p>IP</p></th>
+            <th><p>NAME</p></th>
+            <th><p>HOSTNAME</p></th>
+            <th><p>FQDN</p></th>
+            <th><p>Approved</p></th>
+            <th>Action</th>
+            <th></th>
+        </tr>
+
+        </thead>
+
+        <tbody>
+        {% for node in nodes %}
+            <tr>
+                <td class="hidden"><p class="node_address">{{ node.id }}</p></td>
+                <td >{{ node.ip }}
+                {% if not node.offline %}
+                    {% if node.memory and node.disk %}
+                        <p>memory:{{ node.memory }}<small> GB</small></p><p>disk:{{ node.disk }}<small> GB</small></p>
+                    {% endif %}
+                {% else %}
+                <p><b>client is offline</b></p>
+                {% endif %}
+                </td>
+                <td >{{ node.name }}</td>
+                <td>{{ node.hostname }}</td>
+                <td>{{ node.fqdn }}</td>
+                {% if node.approved == 1 %}
+                    <td class="nodes_approval_state"><p>approved</p></td>
+                    <td>
+                        <a data-toggle-to="0" data-toggle="tooltip" title="disapprove" style="cursor:pointer;" class="nodes_approval_status btn btn-danger">
+                            <i class="fa fa-remove"></i>
+                        </a>
+                        <a href="{% url 'edit_node' node.id %}" data-toggle-to="0" data-toggle="tooltip" title="edit" style="cursor:pointer;" class="nodes_edit btn btn-primary">
+                            <i class="fa fa-edit"></i>
+                        </a>
+
+                    </td>
+                {% else %}
+                    <td class="nodes_approval_state"><p>disapproved</p></td>
+                    <td><a data-toggle-to="1" data-toggle="tooltip" title="approve" style="cursor:pointer;" class="nodes_approval_status btn btn-primary">
+                        <i class="fa fa-check"></i>
+                    </a>
+                    </td>
+                {% endif %}
+
+                <td colspan="1" width="10%">
+                    {% if node.approved == 1 %}
+                    <a href="{% url 'node_details_one' node.id %}" class=" view_metrics btn btn-default ">view metrics</a>
+                    {% else %}
+                        {% with title="'You need to approve this node to view it's metrics'" %}
+                    <a href="{% url 'node_details_one' node.id %}"  class="view_metrics btn btn-default hidden">view metrics</a>
+                                {% endwith %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    </div>
+
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.nodes_approval_status').on("click",function(){
+                var toggle_to= parseInt($(this).data('toggle-to'));
+                console.log(toggle_to);
+                var id_this=$(this);
+                var id = id_this.closest('tr').find('p.node_address').text();
+                var url = id_this.closest('tr').find('td a.view_metrics').attr("href");
+                HoldOn.open();
+                $.ajax({
+                    type : "POST",
+                    dataType : 'json',
+                    data: {'csrfmiddlewaretoken': '{{ csrf_token }}','status':toggle_to ,'id':id },
+                    url : '{% url 'toggle_approval'%}',
+                    success : function(data) {
+                        if (data.result === 1){
+                            if(toggle_to === 0){
+                                id_this.closest('tr').find('td.nodes_approval_state').text("disapproved");
+                                id_this.data("toggle-to",1);
+                                id_this.attr("title","approve");
+                                id_this.addClass("btn-primary");
+                                id_this.removeClass("btn-danger");
+                                id_this.find('i').attr("class","fa fa-check");
+                                {#id_this.closest('tr').find('td a.view_metrics').attr('data-original-title','You need to approve this node to view it\'s metrics');#}
+                                {#id_this.closest('tr').find('td a.view_metrics').attr('disabled', 'disabled');#}
+                                {#id_this.closest('tr').find('td a.view_metrics').attr("href", '#');#}
+
+                                id_this.closest('tr').find('td a.view_metrics').addClass("hidden");
+
+                            }else{
+                                id_this.closest('tr').find('td.nodes_approval_state').text("approved");
+                                id_this.data("toggle-to",0);
+                                id_this.attr("title","disapprove");
+                                id_this.addClass("btn-danger");
+                                id_this.removeClass("btn-primary");
+                                id_this.find('i').attr("class","fa fa-remove");
+                                {#id_this.closest('tr').find('td a.view_metrics').removeAttr('data-original-title');#}
+                                {#id_this.closest('tr').find('td a.view_metrics').removeAttr('disabled');#}
+                                {#id_this.closest('tr').find('td a.view_metrics').attr('href', url);#}
+                                id_this.closest('tr').find('td a.view_metrics').removeClass("hidden");
+                            }
+                        }
+                        HoldOn.close();
+                    }
+                });
+            });
+        {#    $('textarea').bind("enterKey",function(e){#}
+        {#        console.log("i m entered");#}
+        {#$(this).trigger("enterKey");#}
+        {#var node_id = $(this).closest('tr').find('.node_address').text();#}
+        {#    console.log(node_id);#}
+        {##}
+        {##}
+        {#    });#}
+        {#    $('.text_area').keypress(function(event){#}
+        {##}
+	     {#   var keycode = (event.keyCode ? event.keyCode : event.which);#}
+	     {#   if(keycode == '13'){#}
+	     {#   var node_id = $(this).closest('tr').find('.node_address').text();#}
+	     {#   var node_name = $(this).val();#}
+	     {#   $.ajax({#}
+        {#            type : "POST",#}
+        {#            dataType : 'json',#}
+        {#            data: {'csrfmiddlewaretoken': '{{ csrf_token }}','node_id': node_id, 'node_name': node_name},#}
+        {#            url : '{% url 'change_node_name'%}',#}
+        {#            success : function(data) {#}
+        {#                if(data.success === true){#}
+        {#                location.reload();#}
+        {#                }}#}
+	     {#   });#}
+        {#    }#}
+        {#    });#}
+
+        });
+    </script>
+{% endblock %}

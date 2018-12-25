@@ -1,0 +1,35 @@
+Template: aditas/db_host
+Type: string
+Description: Please enter your postgres host ip
+
+Template: aditas/db_port
+Type: string
+Description: Please enter your postgres port
+
+Template: aditas/db_superuser
+Type: string
+Description: Please enter your postgres superuser
+
+Template: aditas/db_pass
+Type: password
+Description: Please enter your postgres superuser password
+
+Template: aditas/final_show
+Type: select
+Choices: ok, change
+Description: We have set some default value for database ? If you are not ok with this setup.select "change" to change
+ database name: kento
+ database user: kento
+ database user password: CsLMm@px2UuAsagJ
+
+Template: aditas/db_name
+Type: string
+Description: Please enter your choice of database name
+
+Template: aditas/c_user
+Type: string
+Description: Please enter your choice of user
+
+Template: aditas/c_pass
+Type: string
+Description: Please enter your choice of password

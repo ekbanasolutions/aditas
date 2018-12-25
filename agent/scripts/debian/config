@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+. /usr/share/debconf/confmodule
+
+db_input critical aditas-agent/sudo_pass || true
+db_input critical aditas-agent/db_host || true
+db_input critical aditas-agent/db_port || true
+db_input critical aditas-agent/db_name || true
+db_input critical aditas-agent/c_user || true
+db_input critical aditas-agent/c_pass || true
+
+db_go || true
+
+db_fset aditas-agent/sudo_pass seen false
+db_fset aditas-agent/db_host seen false
+db_fset aditas-agent/db_port seen false
+db_fset aditas-agent/db_name seen false
+db_fset aditas-agent/c_user seen false
+db_fset aditas-agent/c_pass seen false
+
+db_stop

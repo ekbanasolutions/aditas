@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+
+case "$1" in
+    remove|deconfigure)
+export ADITAS_LOAD_PATH="/etc/aditas/agent/scripts/shell/load_paths.sh"
+
+if [ -f "${ADITAS_LOAD_PATH}" ]; then
+. "${ADITAS_LOAD_PATH}"
+fi
+. /usr/share/debconf/confmodule
+    if [ -f "${ADITAS_DBCONF_VALUES}" ]; then
+    . "${ADITAS_DBCONF_VALUES}"
+    fi
+
+    if [ -f "${ADITAS_SCRIPT_DIR}/installer.sh" ]; then
+    . "${ADITAS_SCRIPT_DIR}/installer.sh" "clean"
+    fi
+
+    ;;
+
+    upgrade)
+
+    ;;
+    failed-upgrade)
+    ;;
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+exit 0
