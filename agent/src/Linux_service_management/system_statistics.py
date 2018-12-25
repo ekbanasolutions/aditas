@@ -164,8 +164,9 @@ def get_network_bandwidth():
         packets_sent = v.packets_sent
         packetes_recv = v.packets_recv
 
-        value = {"bytes_sent": bytes_sent, "bytes_recv": bytes_recv, "packets_sent": packets_sent, "packets_recv": packetes_recv}
-        network_bandwidth_list.append({k: value})
+        if not bytes_sent == bytes_recv == packets_sent == packetes_recv == 0:
+            value = {"bytes_sent": bytes_sent, "bytes_recv": bytes_recv, "packets_sent": packets_sent, "packets_recv": packetes_recv}
+            network_bandwidth_list.append({k: value})
 
     return json.dumps(network_bandwidth_list)
 
