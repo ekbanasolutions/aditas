@@ -12,7 +12,7 @@ from bigdata_logs.logger import getLoggingInstance
 log = getLoggingInstance()
 
 
-def get_es_db_info():
+def get_es_db_master():
     try:
         conn = get_postgres_connection()
         cur = conn.cursor()
@@ -20,6 +20,20 @@ def get_es_db_info():
               "where type=1 and state=1"
         cur.execute(sql)
         row = cur.fetchone()
+        cur.close()
+        conn.close()
+        return row
+    except Exception as e:
+        log.error(e)
+
+
+def get_es_nodes_info():
+    try:
+        conn = get_postgres_connection()
+        cur = conn.cursor()
+        sql = "select ip from elastic_search_elastic_search where type=0 and state=0"
+        cur.execute(sql)
+        row = cur.fetchall()
         cur.close()
         conn.close()
         return row
@@ -135,6 +149,7 @@ def es_jmx_update(a):
 
 def get_fake_master_standby(db_master_ip, all_master_url):
     fake_masters = []
+    nodes_ip = []
     try:
         db_standby_ip = get_es_db_standby()
         if db_standby_ip is not None:
@@ -153,6 +168,17 @@ def get_fake_master_standby(db_master_ip, all_master_url):
                 # master_name = str_list[-1]
                 master_ip = str_list[0]
                 masters.append(master_ip)
+            else:
+                node_ip = str_list[0]
+                nodes_ip.append(node_ip)
+
+        # Change node status to shutdown if not available in _cat/nodes
+        nodes_info = get_es_nodes_info()
+        for node in nodes_info:
+            n_ip = node[0]
+            if n_ip not in nodes_ip:
+                sql = "UPDATE elastic_search_elastic_search set status='SHUTDOWN', updated_at=%d WHERE ip='%s' and type=%d and state=%d" % (updated_at, n_ip, 0, 0)
+                execute_es_sql(sql)
 
         if db_master_ip not in masters:
             fake_masters.append(db_master_ip)
@@ -173,11 +199,11 @@ def get_elastic_search():
 
         global cluster_id
         global master_web_port
-        es_info = get_es_db_info()
-        if es_info:
-            master_ip = es_info[0]
-            cluster_id = es_info[1]
-            master_web_port = es_info[2]
+        es_master_info = get_es_db_master()
+        if es_master_info:
+            master_ip = es_master_info[0]
+            cluster_id = es_master_info[1]
+            master_web_port = es_master_info[2]
             if master_ip is None:
                 log.warn("Master ip of es is None")
             else:
