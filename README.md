@@ -46,5 +46,5 @@ Aditas can be used by different type of users. It is mainly focused for those wh
 
 ## License
 
-This project is licensed under Ekbana pvt.ltd
+This project is licensed under MIT LICENSE
 
