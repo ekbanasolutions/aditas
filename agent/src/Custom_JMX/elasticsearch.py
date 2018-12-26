@@ -177,7 +177,7 @@ def get_fake_master_standby(db_master_ip, all_master_url):
         for node in nodes_info:
             n_ip = node[0]
             if n_ip not in nodes_ip:
-                sql = "UPDATE elastic_search_elastic_search set status='SHUTDOWN', updated_at=%d WHERE ip='%s' and type=%d and state=%d" % (updated_at, n_ip, 0, 0)
+                sql = "UPDATE elastic_search_elastic_search set status='SHUTDOWN', updated_at=%d WHERE ip='%s' and type=%d and state=%d RETURNING id" % (updated_at, n_ip, 0, 0)
                 es_id = execute_es_sql(sql)
                 metrics_sql = """INSERT INTO elastic_search_metrics (cpu_percent, total_memory, free_memory, used_memory, swap_total_memory, 
                                                         swap_used_memory, swap_free_memory, updated_at, node_id) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}) RETURNING id;""".format(
