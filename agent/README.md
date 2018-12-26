@@ -11,12 +11,17 @@ These instructions will get you a copy of the project up and running on your loc
 
 This section discuss about how to deploy this application on live system with debian package in ubuntu server.
 
-- Step 1: Create a file 'aditas_agent.list' as follows.
+- Step 1: Add GPG-Key for Aditas
+```
+wget -qO - http://aditasapt.ekbana.net/GPG-KEY-aditas | sudo apt-key add -
+```
+
+- Step 2: Create a file 'aditas_agent.list' as follows.
 ```
 echo "deb [arch=amd64] http://aditasapt.ekbana.net/repo/apt/agent xenial main" | sudo tee /etc/apt/sources.list.d/aditas_agent.list
 ```
 
-- Step 2: Update Ubuntu services and install the debian package of Aditas
+- Step 3: Update Ubuntu services and install the debian package of Aditas
 
 ```
 sudo apt-get update
@@ -25,7 +30,7 @@ sudo apt-get install aditas-agent
 
 Follow the installation process
 
-- Step 3: Start Aditas Agent Service
+- Step 4: Start Aditas Agent Service
 ```
 /usr/share/aditas/agent/bin/aditas-agent start
 
