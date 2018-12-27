@@ -1,2 +1,2 @@
 * linguist-vendored
-*.py linguist-vendored=false
+*.py,*.js,*.sh linguist-vendored=false
