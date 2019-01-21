@@ -11,7 +11,7 @@
 
 ## Introduction
 
-Aditas is a python based application which displays information such as service-specific (Hadoop, HBase, Elasticsearch) summaries, graphs, and alerts. You can create and manage your cluster using kento to perform basic operational tasks, such as starting and stopping services, adding hosts to your cluster, and updating service configurations. You also can use kento to monitor cpu-usage, memory-usage, network-bandwidth, disk-usage, disk I/O and top processes of your linux system.
+Aditas is a python based application which displays information such as service-specific (Hadoop, HBase, Elasticsearch) summaries, graphs, and alerts. You can create and manage your cluster using aditas to perform basic operational tasks, such as starting and stopping services, adding hosts to your cluster, and updating service configurations. You also can use aditas to monitor cpu-usage, memory-usage, network-bandwidth, disk-usage, disk I/O and top processes of your linux system.
 
 ## Features
 We have many features for both Bigdata services and linux server.
