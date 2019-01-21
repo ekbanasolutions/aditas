@@ -4,7 +4,7 @@
 - [Features](#features)
     - [Bigdata Services](#bigdata-services)
     - [Linux System](#linux-system)
-- [How is Kento different from Cloudera/Ambari](#comparision)
+- [How is Aditas different from Cloudera/Ambari](#comparision)
 - [User](#user)
 - [Built with](#built-with)
 - [License](#license)
