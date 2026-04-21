@@ -1,5 +1,5 @@
 psycopg2==2.7.5
 psutil>=5.6.6
 requests>=2.20.0
-python-dotenv==0.9.1
+python-dotenv==1.2.2
 json2xml==3.14.0
